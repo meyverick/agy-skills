@@ -1,0 +1,3 @@
+[submodule "references/agentskills"]
+	path = references/agentskills
+	url = https://github.com/agentskills/agentskills.git

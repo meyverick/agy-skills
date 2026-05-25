@@ -1,0 +1,20 @@
+{
+  "name": "agy-skills",
+  "version": "1.0.0",
+  "description": "Installer for elite AI agent skills and compliance auditing guidelines.",
+  "main": "cli.js",
+  "type": "module",
+  "bin": {
+    "agy-skills": "./cli.js"
+  },
+  "keywords": [
+    "gemini",
+    "agent",
+    "skills",
+    "compliance",
+    "audit",
+    "refactor"
+  ],
+  "author": "Meyverick",
+  "license": "Apache-2.0"
+}
