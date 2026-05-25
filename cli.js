@@ -12,19 +12,38 @@ const PLUGIN_NAME = 'agy-skills';
 const srcDir = path.join(__dirname, 'src');
 const targetDir = path.join(os.homedir(), '.gemini', 'config', 'plugins', PLUGIN_NAME);
 
-console.log(`🚀 Installing agy-skills to ${targetDir}...`);
+const args = process.argv.slice(2);
+const command = args[0] || 'install';
 
-try {
-  if (!fs.existsSync(srcDir)) {
-    throw new Error(`Source directory 'src' does not exist at ${srcDir}`);
+if (command === 'install') {
+  console.log(`🚀 Installing agy-skills to ${targetDir}...`);
+  try {
+    if (!fs.existsSync(srcDir)) {
+      throw new Error(`Source directory 'src' does not exist at ${srcDir}`);
+    }
+
+    // Create target directory and copy content recursively
+    fs.mkdirSync(targetDir, { recursive: true });
+    fs.cpSync(srcDir, targetDir, { recursive: true, force: true });
+
+    console.log(`✅ Success! Installed src content into ${targetDir}`);
+  } catch (error) {
+    console.error(`❌ Installation failed: ${error.message}`);
+    process.exit(1);
   }
-
-  // Create target directory and copy content recursively
-  fs.mkdirSync(targetDir, { recursive: true });
-  fs.cpSync(srcDir, targetDir, { recursive: true, force: true });
-
-  console.log(`✅ Success! Installed src content into ${targetDir}`);
-} catch (error) {
-  console.error(`❌ Installation failed: ${error.message}`);
-  process.exit(1);
+} else if (command === 'uninstall') {
+  console.log(`🧹 Uninstalling agy-skills from ${targetDir}...`);
+  try {
+    if (fs.existsSync(targetDir)) {
+      fs.rmSync(targetDir, { recursive: true, force: true });
+      console.log(`✅ Success! Removed plugin folder from ${targetDir}`);
+    } else {
+      console.log(`⚠️ Plugin folder does not exist at ${targetDir}`);
+    }
+  } catch (error) {
+    console.error(`❌ Uninstallation failed: ${error.message}`);
+    process.exit(1);
+  }
+} else {
+  console.log("Usage: bunx github:meyverick/agy-skills [install|uninstall]");
 }
