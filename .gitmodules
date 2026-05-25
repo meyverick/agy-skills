@@ -1,3 +1,9 @@
 [submodule "references/agentskills"]
 	path = references/agentskills
 	url = https://github.com/agentskills/agentskills.git
+[submodule "references/modern-web-guidance"]
+	path = references/modern-web-guidance
+	url = https://github.com/GoogleChrome/modern-web-guidance.git
+[submodule "references/vercel-skills"]
+	path = references/vercel-skills
+	url = https://github.com/vercel-labs/skills.git
