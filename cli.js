@@ -23,6 +23,24 @@ if (command === 'install') {
       throw new Error(`Source directory 'src' does not exist at ${srcDir}`);
     }
 
+    // Copy local src contents (core skills and rules)
+    fs.mkdirSync(targetDir, { recursive: true });
+    fs.cpSync(srcDir, targetDir, { recursive: true, force: true });
+    console.log("✅ Installed core skills and metadata configurations.");
+    console.log(`\n🎉 Success! Installed all core plugin content into ${targetDir}`);
+    console.log("💡 Tip: To install extra external skills (modern-web-guidance, chrome-extensions, find-skills), run:");
+    console.log("   bunx github:meyverick/agy-skills extra");
+  } catch (error) {
+    console.error(`❌ Installation failed: ${error.message}`);
+    process.exit(1);
+  }
+} else if (command === 'extra') {
+  console.log(`🚀 Installing agy-skills with extra external skills to ${targetDir}...`);
+  try {
+    if (!fs.existsSync(srcDir)) {
+      throw new Error(`Source directory 'src' does not exist at ${srcDir}`);
+    }
+
     // 1. Copy local src contents (core skills and metadata)
     fs.mkdirSync(targetDir, { recursive: true });
     fs.cpSync(srcDir, targetDir, { recursive: true, force: true });
@@ -52,13 +70,13 @@ if (command === 'install') {
 
       console.log('✅ Success! Fetched and installed all external skills.');
     } catch (err) {
-      console.warn(`⚠️ Warning: Failed to fetch external skills dynamically (${err.message}). Only core skills were installed.`);
+      console.warn(`⚠️ Warning: Failed to fetch external skills dynamically (${err.message}).`);
     } finally {
       // Cleanup tempParentDir
       fs.rmSync(tempParentDir, { recursive: true, force: true });
     }
 
-    console.log(`\n🎉 Success! Installed all plugin content into ${targetDir}`);
+    console.log(`\n🎉 Success! Installed all plugin and extra content into ${targetDir}`);
   } catch (error) {
     console.error(`❌ Installation failed: ${error.message}`);
     process.exit(1);
@@ -68,7 +86,7 @@ if (command === 'install') {
   try {
     if (fs.existsSync(targetDir)) {
       fs.rmSync(targetDir, { recursive: true, force: true });
-      console.log(`✅ Success! Removed plugin folder from ${targetDir}`);
+      console.log("✅ Success! Removed plugin folder from target directory.");
     } else {
       console.log(`⚠️ Plugin folder does not exist at ${targetDir}`);
     }
@@ -77,5 +95,5 @@ if (command === 'install') {
     process.exit(1);
   }
 } else {
-  console.log("Usage: bunx github:meyverick/agy-skills [install|uninstall]");
+  console.log("Usage: bunx github:meyverick/agy-skills [install|uninstall|extra]");
 }

@@ -4,10 +4,16 @@ A collection of elite, modular, and validated AI agent skills designed to enforc
 
 ## Installation
 
-You can install the contents of the `src/` directory directly into your local Gemini configuration directory by running:
-
+### Core Installation
+To install the core plugin and the six primary skills, run:
 ```bash
 bunx github:meyverick/agy-skills
+```
+
+### Full Installation (Including External Skills)
+To install the core plugin along with optional external skills (`modern-web-guidance`, `chrome-extensions`, and `find-skills`) fetched dynamically from their upstream repositories, run:
+```bash
+bunx github:meyverick/agy-skills extra
 ```
 
 On Windows, the skills are installed at:

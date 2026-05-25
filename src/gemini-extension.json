@@ -1,6 +1,0 @@
-{
-  "name": "agy-skills",
-  "description": "Validated Agent Skills for software architecture, resilience/security, performance tuning, and QA/observability compliance orchestration.",
-  "version": "1.0.0",
-  "contextFileName": "GEMINI.md"
-}
