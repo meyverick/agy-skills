@@ -1,0 +1,19 @@
+{
+  "name": "agy-skills",
+  "version": "1.0.0",
+  "description": "Validated Agent Skills for software architecture, resilience/security, performance tuning, and QA/observability compliance orchestration.",
+  "author": {
+    "name": "Meyverick"
+  },
+  "repository": "https://github.com/meyverick/agy-skills",
+  "license": "Apache-2.0",
+  "keywords": [
+    "gemini",
+    "agent",
+    "skills",
+    "architecture",
+    "compliance",
+    "orchestration",
+    "refactoring"
+  ]
+}
