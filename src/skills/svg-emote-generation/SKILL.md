@@ -1,19 +1,19 @@
 ---
 name: svg-emote-generation
-description: Designs production-ready, perfectly looping Scalable Vector Graphics (SVGs) and packages them into a strict JSON payload. Use when creating or modifying animated SVGs for emotes, verifying animation loop smoothness, or structuring optimized square aspect-ratio graphics.
+description: Designs production-ready, perfectly looping Scalable Vector Graphics (SVGs). Use when creating or modifying animated SVGs for emotes, verifying animation loop smoothness, or structuring optimized square aspect-ratio graphics.
 license: Apache-2.0
 ---
 
 # SVG Emote Generation
 
-This skill outlines the process of designing production-ready, perfectly looping Scalable Vector Graphics (SVGs) and packaging them into a strict JSON payload. It guides the creation of highly readable, responsive vector assets optimized for micro-scale UI integration.
+This skill outlines the process of designing production-ready, perfectly looping Scalable Vector Graphics (SVGs). It guides the creation of highly readable, responsive vector assets optimized for micro-scale UI integration.
 
 ## Activation Criteria
 
 Use this skill when:
 - Creating new animated emotes or UI indicators as SVGs.
 - Modifying or optimizing existing animated SVGs.
-- Packaging SVG graphics into a structured JSON database or API payload.
+- Writing, updating, or saving SVG file assets to the local filesystem.
 - Auditing SVG animations for looping compliance, duration budgets, and micro-scale legibility.
 
 ---
@@ -22,31 +22,15 @@ Use this skill when:
 
 Before generating or modifying any SVG, you must establish state awareness to prevent destructive overrides:
 
-1.  **Inventory Check**: Scan the destination directory (defaulting to `./src/lib/emotes/`) to retrieve the current inventory of existing emote files.
+1.  **Inventory Check**: Scan the destination directory (defaulting to `./src/lib/emotes/`) to retrieve the current inventory of existing SVG files.
 2.  **Intent Routing**:
     *   **Create New**: If generating a new emote:
         *   Produce a unique kebab-case slug for the identifier.
         *   Compare this slug against the destination directory inventory.
-        *   If a file with the same name exists, append a numerical suffix (e.g., `happy-face-2.json`) to prevent overwriting existing assets.
+        *   If a file with the same name exists, append a numerical suffix (e.g., `happy-face-2.svg`) to prevent overwriting existing assets.
     *   **Edit Existing**: If modifying an emote:
         *   Verify the file exists in the destination directory.
-        *   If it exists, read the existing JSON state and SVG code before applying any changes.
-
----
-
-## Critical I/O Constraints
-
-1.  **Strict File Location**: Save files exclusively to the target directory (e.g., `./src/lib/emotes/`). Generate a filename matching the kebab-case slug and ending in `.json` (e.g., `happy-face.json`).
-2.  **Strict JSON Schema**: Output a valid JSON structure conforming precisely to this schema:
-    ```json
-    {
-      "id": "<the-unique-kebab-case-slug>",
-      "name": "<Human Readable Name>",
-      "updatedAt": <current_unix_timestamp_in_milliseconds>,
-      "svgCode": "<THE_ESCAPED_SVG_STRING>"
-    }
-    ```
-3.  **JSON String Escaping**: The `svgCode` field must contain a valid, escaped string. Minimize the SVG to a single line, strip unnecessary whitespace, and escape all double quotes (`"`) as `\"` (or use single quotes for SVG attributes) to ensure the overall JSON payload remains parseable.
+        *   If it exists, read the existing SVG code before applying any changes.
 
 ---
 
