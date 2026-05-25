@@ -11,10 +11,10 @@ bunx github:meyverick/agy-skills
 ```
 
 On Windows, the skills are installed at:
-`%userprofile%/.gemini/config/plugins/refactorer/`
+`%userprofile%/.gemini/config/plugins/agy-skills/`
 
 On Linux/macOS, the skills are installed at:
-`~/.gemini/config/plugins/refactorer/`
+`~/.gemini/config/plugins/agy-skills/`
 
 ---
 

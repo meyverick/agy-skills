@@ -8,7 +8,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const PLUGIN_NAME = 'refactorer';
+const PLUGIN_NAME = 'agy-skills';
 const srcDir = path.join(__dirname, 'src');
 const targetDir = path.join(os.homedir(), '.gemini', 'config', 'plugins', PLUGIN_NAME);
 
