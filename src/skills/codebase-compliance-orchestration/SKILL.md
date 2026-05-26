@@ -26,10 +26,10 @@ To minimize computational footprint and runtime costs, the orchestrator evaluate
 
 | Modified Asset Types | Targeted Skills to Activate |
 | :--- | :--- |
-| **Logic / Domain Code** (`*.py`, `*.ts`, `*.go`) | [architectural-alignment-validation](relative:///architectural-alignment-validation/SKILL.md)<br>[resilience-and-security-auditing](relative:///resilience-and-security-auditing/SKILL.md) |
-| **Data / Cache Config / Queries** (`*.sql`, DB files, query scripts) | [cloud-native-infrastructure-optimization](relative:///cloud-native-infrastructure-optimization/SKILL.md)<br>[resilience-and-security-auditing](relative:///resilience-and-security-auditing/SKILL.md) |
-| **Infrastructure / Containers** (`Dockerfile`, `*.tf`, `*.yaml`) | [cloud-native-infrastructure-optimization](relative:///cloud-native-infrastructure-optimization/SKILL.md) |
-| **Tests & Schemas** (`*test*`, `openapi.yaml`, `*.proto`) | [quality-assurance-and-observability-validation](relative:///quality-assurance-and-observability-validation/SKILL.md) |
+| **Logic / Domain Code** (`*.py`, `*.ts`, `*.go`) | [architectural-alignment-validation](../architectural-alignment-validation/SKILL.md)<br>[resilience-and-security-auditing](../resilience-and-security-auditing/SKILL.md) |
+| **Data / Cache Config / Queries** (`*.sql`, DB files, query scripts) | [cloud-native-infrastructure-optimization](../cloud-native-infrastructure-optimization/SKILL.md)<br>[resilience-and-security-auditing](../resilience-and-security-auditing/SKILL.md) |
+| **Infrastructure / Containers** (`Dockerfile`, `*.tf`, `*.yaml`) | [cloud-native-infrastructure-optimization](../cloud-native-infrastructure-optimization/SKILL.md) |
+| **Tests & Schemas** (`*test*`, `openapi.yaml`, `*.proto`) | [quality-assurance-and-observability-validation](../quality-assurance-and-observability-validation/SKILL.md) |
 
 ---
 
@@ -59,15 +59,15 @@ graph TD
 
 Focuses on structural soundness and security posture prior to writing or deploying complex logic.
 
-1. **Apply Architecture Guidelines:** Invoke [architectural-alignment-validation](relative:///architectural-alignment-validation/SKILL.md) on code paths to review class design, boundaries, and SOLID compliance.
-2. **Apply Security Guidelines:** Invoke [resilience-and-security-auditing](relative:///resilience-and-security-auditing/SKILL.md) to audit input handling, exception pathways, and concurrency mechanisms.
+1. **Apply Architecture Guidelines:** Invoke [architectural-alignment-validation](../architectural-alignment-validation/SKILL.md) on code paths to review class design, boundaries, and SOLID compliance.
+2. **Apply Security Guidelines:** Invoke [resilience-and-security-auditing](../resilience-and-security-auditing/SKILL.md) to audit input handling, exception pathways, and concurrency mechanisms.
 
 ### Phase 2: Evaluation & Review (Audit)
 
 Focuses on operational performance, testing completeness, and contract compliance.
 
-1. **Optimize Infrastructure & Performance:** Invoke [cloud-native-infrastructure-optimization](relative:///cloud-native-infrastructure-optimization/SKILL.md) to audit query complexity (N+1 issues), database transactional boundaries, caching configurations, and image efficiency.
-2. **Validate Observability & QA:** Invoke [quality-assurance-and-observability-validation](relative:///quality-assurance-and-observability-validation/SKILL.md) to inspect structured telemetry formats, verify API contract compliance (RFC 7807), check test mocks, and verify version numbering (SemVer).
+1. **Optimize Infrastructure & Performance:** Invoke [cloud-native-infrastructure-optimization](../cloud-native-infrastructure-optimization/SKILL.md) to audit query complexity (N+1 issues), database transactional boundaries, caching configurations, and image efficiency.
+2. **Validate Observability & QA:** Invoke [quality-assurance-and-observability-validation](../quality-assurance-and-observability-validation/SKILL.md) to inspect structured telemetry formats, verify API contract compliance (RFC 7807), check test mocks, and verify version numbering (SemVer).
 
 ---
 
