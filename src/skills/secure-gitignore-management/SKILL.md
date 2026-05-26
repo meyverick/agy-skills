@@ -2,6 +2,7 @@
 name: secure-gitignore-management
 description: Manages and audits .gitignore files using a highly secure default-deny pattern. Enforces explicit security blocks on environment files (.env), keys, credentials, and logs. Uses git ls-files to verify that no sensitive files are tracked in the Git index, and excludes common compilation artifacts.
 license: Apache-2.0
+compatibility: Requires Git CLI (v2.0+) on any operating system (Windows, macOS, Linux).
 ---
 
 # Secure Gitignore Management
@@ -50,17 +51,19 @@ Just because a file is added to `.gitignore` does not mean it is safe. If a file
 
 ### Step-by-Step Index Auditing:
 
-1.  **Check for Tracked Secrets**: Run `git ls-files` and filter for environment or key patterns to ensure no secrets are stored in the index cache.
+1.  **Check for Tracked Secrets (Cross-Platform)**: Run `git ls-files` with pathspecs. This runs natively on any shell (CMD, PowerShell, Bash, Zsh) and does not rely on Unix `grep` pipes:
     ```bash
-    git ls-files | grep -E "\.env|\.key|\.pem|credentials|secret"
+    git ls-files "*.env*" "*.key" "*.pem" "*credentials*" "*secret*"
     ```
-2.  **Remove Ignored Files from Index**: If any ignored file (like node_modules or a build directory) is currently tracked, untrack it without deleting it from your local disk:
+    *Note: In clean repositories where no secrets are tracked, this command outputs nothing and returns an exit code of `0`, avoiding false-positive CI/CD build failures.*
+
+2.  **Remove Ignored Files from Index**: If any ignored file (like a local database or secret file) is currently tracked, untrack it without deleting it from your local disk:
     ```bash
     git rm --cached <file-path>
-    # Or to clean everything that should be ignored:
-    git rm -r --cached .
-    git add .
     ```
+    > [!WARNING]
+    > **Avoid Repository-Wide Cache Clears on Active Codebases**
+    > Re-indexing the entire repository (using `git rm -r --cached .` followed by `git add .`) rewrites index metadata for every file. On active collaborative repositories, committing this will trigger massive merge conflicts for other developers. Limit index clears to specific paths whenever possible, and only perform global resets during initial repository setups.
 3.  **Validate Git Status**: Confirm that the only changes staged for commit are those explicitly intended.
 
 ---
@@ -78,6 +81,7 @@ Just because a file is added to `.gitignore` does not mean it is safe. If a file
     !parent/child/
     !parent/child/target-file.txt
     ```
+*   **Large File & Payload Management (Green Software Alignment)**: Git is not designed to track large binary assets (e.g., raw videos, heavy audio files, uncompressed graphics, database dumps). Commit history retains these files forever, inflating clone times and CI/CD bandwidth. Exclude massive assets in `.gitignore` and manage them via **Git LFS (Large File Storage)** or cloud storage buckets.
 
 ---
 
