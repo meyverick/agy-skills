@@ -26,9 +26,10 @@ On Linux/macOS, the skills and rules are installed at:
 
 ## Included Agent Skills
 
-This plugin installs 40 highly cohesive, validated skills complying with the Agent Skills specification, grouped by domain:
+This plugin installs 41 highly cohesive, validated skills complying with the Agent Skills specification, grouped by domain:
 
 ### 1. Core Standards & Orchestration
+*   **`fullstack-monorepo-initialization`**: Explicit macro command to bootstrap a SOTA decoupled full-stack monorepo (Encore, Svelte 5, Tauri, PixiJS).
 *   **`architectural-alignment-validation`**: Evaluates layout and design against SOLID, DRY, KISS, SoC, YAGNI, Law of Demeter, Composition, and Domain-Driven Design (DDD).
 *   **`resilience-and-security-auditing`**: Audits codebase structures for defensive programming, input validation, fail-fast mechanics, thread-safety/concurrency, and distributed resiliency (circuit breakers, exponential backoff).
 *   **`cloud-native-infrastructure-optimization`**: Validates configuration, N+1 query elimination, database connection management, caching TTLs, non-blocking asynchronous I/O, multi-stage Docker builds, and carbon footprint minimization.
