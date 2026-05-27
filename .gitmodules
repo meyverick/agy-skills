@@ -7,3 +7,15 @@
 [submodule "references/vercel-skills"]
 	path = references/vercel-skills
 	url = https://github.com/vercel-labs/skills.git
+[submodule "references/agents-from-scratch"]
+	path = references/agents-from-scratch
+	url = https://github.com/pguso/agents-from-scratch.git
+[submodule "references/ai-agents-for-beginners"]
+	path = references/ai-agents-for-beginners
+	url = https://github.com/microsoft/ai-agents-for-beginners.git
+[submodule "references/ai-agents-from-scratch"]
+	path = references/ai-agents-from-scratch
+	url = https://github.com/pguso/ai-agents-from-scratch.git
+[submodule "references/ai-product-from-scratch"]
+	path = references/ai-product-from-scratch
+	url = https://github.com/pguso/ai-product-from-scratch.git

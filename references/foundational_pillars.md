@@ -35,8 +35,9 @@
 22. **API Contracts:** Communicate via strict, version-controlled schemas (OpenAPI/gRPC). Standardize HTTP methods and use machine-readable error formats (RFC 7807).
 23. **Evolutionary Architecture:** Adhere to Semantic Versioning. Favor graceful deprecation via sunset schedules over abrupt breaking changes.
 24. **Continuous Refactoring:** Follow the Boy Scout Rule (leave code better than you found it). Incrementally resolve technical debt during feature work.
+25. **Repository Branching Standards:** Enforce `main` as the default primary branch for all version-controlled source code repositories, completely replacing legacy nomenclature like `master`.
 
 ## Part 5: Context & Ecosystem
 
-25. **Green Software Engineering:** Minimize carbon footprint (e.g., event-driven over polling, optimizing wire payloads). Schedule heavy batch jobs during periods of high grid-renewable energy when possible.
-26. **2026 Ecosystem & Empirical Verification:** Proactively cross-reference methodologies with 2026 state-of-the-art practices and empirical data to strictly prevent AI hallucination.
+26. **Green Software Engineering:** Minimize carbon footprint (e.g., event-driven over polling, optimizing wire payloads). Schedule heavy batch jobs during periods of high grid-renewable energy when possible.
+27. **2026 Ecosystem & Empirical Verification:** Proactively cross-reference methodologies with 2026 state-of-the-art practices and empirical data to strictly prevent AI hallucination.
