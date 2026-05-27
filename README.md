@@ -1,25 +1,25 @@
 # agy-skills
 
-A collection of elite, modular, and validated AI agent skills designed to enforce core engineering, security, cloud-native, and quality-assurance standards in codebase environments.
+A collection of elite, modular, and validated AI agent skills and system rules designed to enforce core engineering, security, cloud-native, and quality-assurance standards in codebase environments.
 
 ## Installation
 
 ### Core Installation
-To install the core plugin along with all 34 primary skills, run:
+To install the core plugin along with all 34 primary skills and global system rules, run:
 ```bash
 bunx github:meyverick/agy-skills
 ```
 
 ### Full Installation (Including External Skills)
-To install the core plugin along with optional external skills (`modern-web-guidance`, `chrome-extensions`, and `find-skills`) fetched dynamically from their upstream repositories, run:
+To install the core plugin, global rules, and optional external skills (`modern-web-guidance`, `chrome-extensions`, and `find-skills`) fetched dynamically from their upstream repositories, run:
 ```bash
 bunx github:meyverick/agy-skills extra
 ```
 
-On Windows, the skills are installed at:
+On Windows, the skills and rules are installed at:
 `%userprofile%/.gemini/config/plugins/agy-skills/`
 
-On Linux/macOS, the skills are installed at:
+On Linux/macOS, the skills and rules are installed at:
 `~/.gemini/config/plugins/agy-skills/`
 
 ---
@@ -77,6 +77,7 @@ This plugin installs 34 highly cohesive, validated skills complying with the Age
 ## Repository Structure
 
 *   `src/skills/`: The source directories for each Agent Skill.
+*   `src/rules/`: Global agent rules and directives (e.g. `GEMINI.md`) installed to enforce system-wide core engineering pillars.
 *   `references/agentskills/`: Git submodule referencing the official `agentskills` reference library specification.
 *   `cli.js`: Portable installation script.
 
