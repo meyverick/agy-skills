@@ -26,7 +26,7 @@ On Linux/macOS, the skills and rules are installed at:
 
 ## Included Agent Skills
 
-This plugin installs 39 highly cohesive, validated skills complying with the Agent Skills specification, grouped by domain:
+This plugin installs 40 highly cohesive, validated skills complying with the Agent Skills specification, grouped by domain:
 
 ### 1. Core Standards & Orchestration
 *   **`architectural-alignment-validation`**: Evaluates layout and design against SOLID, DRY, KISS, SoC, YAGNI, Law of Demeter, Composition, and Domain-Driven Design (DDD).
@@ -54,6 +54,7 @@ This plugin installs 39 highly cohesive, validated skills complying with the Age
 *   **`monetization-sdk-integration`**: Mediations and networks logic (consent flows, ad states, exponential retry cycles).
 
 ### 4. Game Development & Architecture
+*   **`pixijs-2d-rendering`**: Ultra-fast WebGL/WebGPU 2D rendering, texture batching, and object pooling optimizations.
 *   **`unity-webgl-pruning`**: Custom configurations to prune and reduce WebGL assembly footprints.
 *   **`unity-csharp-memory-stripping`**: Script stripping and memory profiling to avoid GC pressure.
 *   **`unity-javascript-bridge-integration`**: High-performance browser integrations via custom `.jslib` scripts.
