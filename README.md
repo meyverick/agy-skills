@@ -26,7 +26,7 @@ On Linux/macOS, the skills and rules are installed at:
 
 ## Included Agent Skills
 
-This plugin installs 34 highly cohesive, validated skills complying with the Agent Skills specification, grouped by domain:
+This plugin installs 39 highly cohesive, validated skills complying with the Agent Skills specification, grouped by domain:
 
 ### 1. Core Standards & Orchestration
 *   **`architectural-alignment-validation`**: Evaluates layout and design against SOLID, DRY, KISS, SoC, YAGNI, Law of Demeter, Composition, and Domain-Driven Design (DDD).
@@ -35,11 +35,13 @@ This plugin installs 34 highly cohesive, validated skills complying with the Age
 *   **`quality-assurance-and-observability-validation`**: Validates structured JSON logging, correlation IDs, unit test coverage, mock injection patterns, OpenAPI/gRPC API contracts, and Semantic Versioning (SemVer) compatibility.
 *   **`workspace-refactoring`**: Conducts automated structural audits and refactoring across the workspace.
 *   **`secure-gitignore-management`**: Manages and audits `.gitignore` files using a secure default-deny pattern.
+*   **`pnpm-workspace-management`**: Manages monorepo workspaces, strict dependency resolution, and optimized lockfiles using pnpm.
 
 ### 2. Systems, Backend & Deployment
 *   **`rust-systems-programming`**: Core Rust systems paradigms (Borrow Checker, lifetimes, zero-cost abstractions).
 *   **`tokio-async-architecture`**: Asynchronous runtimes, thread pool optimization, channels (`mpsc`), concurrency, and preventing thread starvation.
 *   **`tauri-desktop-engineering`**: Tauri application lifecycle, IPC security (Isolation pattern), command validation, and minimal executable payloads.
+*   **`encore-ts-backend-engineering`**: Type-safe backend microservices and APIs using Encore.ts (infrastructure-from-code).
 *   **`caprover-cli-deployment`**: Automates deployment pipelines via the CapRover CLI and `captain-definition` formats.
 
 ### 3. Playable Ads & Monetization
@@ -67,8 +69,11 @@ This plugin installs 34 highly cohesive, validated skills complying with the Age
 *   **`fairygui-integration`**: Decouples UI structures, layout logic, and asset payloads.
 
 ### 5. Web, Motion & Interactive Engineering
+*   **`sveltekit-fullstack-architecture`**: Scalable full-stack SvelteKit applications (server endpoints, form actions, routing).
 *   **`svelte-game-development`**: Manages interactive HTML5 Canvas and WebGL game rendering states in Svelte 5.
 *   **`svelte-ui-engineering`**: UI movement orchestrations utilizing Svelte 5 runes (`$state`, `$derived`, `$effect`).
+*   **`tanstack-query-architecture`**: Asynchronous data fetching, strict caching TTLs, optimistic updates, and server state synchronization.
+*   **`vite-build-optimization`**: Vite HMR configurations, Rollup chunk splitting, lazy-loading, and secure env variables.
 *   **`svg-emote-generation`**: Perfectly looping Vector Graphics optimization and styling.
 *   **`virtual-avatar-engineering`**: High-performance WebGL/Canvas visual avatars utilizing MediaPipe ML models in web workers.
 

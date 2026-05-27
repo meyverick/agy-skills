@@ -13,7 +13,7 @@ Plugins are namespaced bundles that allow you to extend Antigravity's capabiliti
 
 If you want to create your own plugins or inspect existing ones, they follow a specific directory structure. A plugin is a directory containing a `plugin.json` file and optional subdirectories for different customization types:
 
-```mardown
+```markdown
 plugins/<plugin-name>/
 ├── plugin.json       # Required marker file
 ├── mcp_config.json   # Optional MCP server definitions
