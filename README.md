@@ -5,7 +5,7 @@ A collection of elite, modular, and validated AI agent skills designed to enforc
 ## Installation
 
 ### Core Installation
-To install the core plugin and the six primary skills, run:
+To install the core plugin along with all 34 primary skills, run:
 ```bash
 bunx github:meyverick/agy-skills
 ```
@@ -26,14 +26,51 @@ On Linux/macOS, the skills are installed at:
 
 ## Included Agent Skills
 
-This plugin installs six highly cohesive, validated skills complying with the Agent Skills specification:
+This plugin installs 34 highly cohesive, validated skills complying with the Agent Skills specification, grouped by domain:
 
-1.  **`architectural-alignment-validation`**: Evaluates layout and design against SOLID, DRY, KISS, SoC, YAGNI, Law of Demeter, Composition, and Domain-Driven Design (DDD).
-2.  **`resilience-and-security-auditing`**: Audits codebase structures for defensive programming, input validation, fail-fast mechanics, thread-safety/concurrency, and distributed resiliency (circuit breakers, exponential backoff).
-3.  **`cloud-native-infrastructure-optimization`**: Validates configuration, N+1 query elimination, database connection management, caching TTLs, non-blocking asynchronous I/O, multi-stage Docker builds, and carbon footprint minimization.
-4.  **`quality-assurance-and-observability-validation`**: Validates structured JSON logging, correlation IDs, unit test coverage, mock injection patterns, OpenAPI/gRPC API contracts, and Semantic Versioning (SemVer) compatibility.
-5.  **`codebase-compliance-orchestration`**: Coordinates reviews and feature creation, orchestrating the four specialized skills across Generation and Evaluation lifecycles.
-6.  **`workspace-refactoring`**: Conducts automated structural audits and refactoring across the workspace.
+### 1. Core Standards & Orchestration
+*   **`architectural-alignment-validation`**: Evaluates layout and design against SOLID, DRY, KISS, SoC, YAGNI, Law of Demeter, Composition, and Domain-Driven Design (DDD).
+*   **`resilience-and-security-auditing`**: Audits codebase structures for defensive programming, input validation, fail-fast mechanics, thread-safety/concurrency, and distributed resiliency (circuit breakers, exponential backoff).
+*   **`cloud-native-infrastructure-optimization`**: Validates configuration, N+1 query elimination, database connection management, caching TTLs, non-blocking asynchronous I/O, multi-stage Docker builds, and carbon footprint minimization.
+*   **`quality-assurance-and-observability-validation`**: Validates structured JSON logging, correlation IDs, unit test coverage, mock injection patterns, OpenAPI/gRPC API contracts, and Semantic Versioning (SemVer) compatibility.
+*   **`workspace-refactoring`**: Conducts automated structural audits and refactoring across the workspace.
+*   **`secure-gitignore-management`**: Manages and audits `.gitignore` files using a secure default-deny pattern.
+
+### 2. Systems, Backend & Deployment
+*   **`rust-systems-programming`**: Core Rust systems paradigms (Borrow Checker, lifetimes, zero-cost abstractions).
+*   **`tokio-async-architecture`**: Asynchronous runtimes, thread pool optimization, channels (`mpsc`), concurrency, and preventing thread starvation.
+*   **`tauri-desktop-engineering`**: Tauri application lifecycle, IPC security (Isolation pattern), command validation, and minimal executable payloads.
+*   **`caprover-cli-deployment`**: Automates deployment pipelines via the CapRover CLI and `captain-definition` formats.
+
+### 3. Playable Ads & Monetization
+*   **`playable-ad-packaging`**: Compresses assets and inline packages HTML5 games for ad networks (AppLovin, IronSource, Voodoo).
+*   **`mraid-ad-integration`**: Embeds MRAID standard logic for interactive playable viewability and CTA handling.
+*   **`playable-ad-telemetry`**: Low-payload custom telemetry and event mapping without heavy third-party SDKs.
+*   **`playable-ad-design-research`**: Evaluates modern interactive designs, reverse-engineered playables, and systems.
+*   **`lightweight-analytics-integration`**: Stripped, minified analytics suites for quick integration.
+*   **`unity-ads-integration`**: Configures first-party Unity Ads SDK parameters.
+*   **`monetization-sdk-integration`**: Mediations and networks logic (consent flows, ad states, exponential retry cycles).
+
+### 4. Game Development & Architecture
+*   **`unity-webgl-pruning`**: Custom configurations to prune and reduce WebGL assembly footprints.
+*   **`unity-csharp-memory-stripping`**: Script stripping and memory profiling to avoid GC pressure.
+*   **`unity-javascript-bridge-integration`**: High-performance browser integrations via custom `.jslib` scripts.
+*   **`unity-dots-programming`**: Employs Entity Component System (ECS) architectures inside Unity.
+*   **`unity-burst-optimization`**: Harnesses LLVM-backed Burst compilers for multithreaded performance jobs.
+*   **`cocos-playbuild-integration`**: Decoupled macros mapping for playable builds out of Cocos Creator.
+*   **`oops-framework-development`**: Implements OOP MVC architectures and modules inside Cocos.
+*   **`html5-game-migration`**: Migrates full-scale game architectures (Unity/Cocos) to responsive HTML5 engines.
+*   **`colyseus-multiplayer-development`**: Client-server state sync multiplayer configurations.
+*   **`pinus-server-development`**: Authoritative MMORPG distributed server orchestrations.
+*   **`esengine-integration`**: TypeScript-based modular engines integrating prediction-physics architectures.
+*   **`biteecs-optimization`**: Bare-metal, high-performance data-oriented ECS loops using `bitECS`.
+*   **`fairygui-integration`**: Decouples UI structures, layout logic, and asset payloads.
+
+### 5. Web, Motion & Interactive Engineering
+*   **`svelte-game-development`**: Manages interactive HTML5 Canvas and WebGL game rendering states in Svelte 5.
+*   **`svelte-ui-engineering`**: UI movement orchestrations utilizing Svelte 5 runes (`$state`, `$derived`, `$effect`).
+*   **`svg-emote-generation`**: Perfectly looping Vector Graphics optimization and styling.
+*   **`virtual-avatar-engineering`**: High-performance WebGL/Canvas visual avatars utilizing MediaPipe ML models in web workers.
 
 ---
 
