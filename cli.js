@@ -23,6 +23,11 @@ if (command === 'install') {
       throw new Error(`Source directory 'src' does not exist at ${srcDir}`);
     }
 
+    // Clean existing target dir first to ensure no orphaned files remain
+    if (fs.existsSync(targetDir)) {
+      fs.rmSync(targetDir, { recursive: true, force: true });
+    }
+
     // Copy local src contents (core skills and rules)
     fs.mkdirSync(targetDir, { recursive: true });
     fs.cpSync(srcDir, targetDir, { recursive: true, force: true });
@@ -39,6 +44,11 @@ if (command === 'install') {
   try {
     if (!fs.existsSync(srcDir)) {
       throw new Error(`Source directory 'src' does not exist at ${srcDir}`);
+    }
+
+    // Clean existing target dir first to ensure no orphaned files remain
+    if (fs.existsSync(targetDir)) {
+      fs.rmSync(targetDir, { recursive: true, force: true });
     }
 
     // 1. Copy local src contents (core skills and metadata)
