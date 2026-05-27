@@ -21,9 +21,9 @@ When explicitly triggered by the user, immediately initialize a new high-perform
 *   **State Management**: Isolate UI state using Svelte 5 Runes (`$state`, `$derived`). Integrate TanStack Query for caching server state.
 *   **Graphics Integration**: Integrate PixiJS v8 (utilizing native WebGPU rendering) wrapped in a custom Svelte component. You must manage the Pixi application's initialization and disposal strictly inside a Svelte 5 `$effect` cleanup return function to prevent WebGL memory leaks.
 
-### 3. Desktop Shell (`/apps/desktop`)
+### 3. Client Shell (`/apps/tauri`)
 *   **Engine**: Tauri v2.
-*   **Requirements**: Package the Svelte frontend into a secure, pure client desktop shell. The frontend must dynamic-load its target API base URL via Vite environment variables to transition smoothly between local development and remote production backends.
+*   **Requirements**: Package the Svelte frontend into a secure, pure client shell supporting both desktop (macOS, Windows, Linux) and mobile (iOS, Android) platforms. The frontend must dynamic-load its target API base URL via Vite environment variables to transition smoothly between local development and remote production backends.
 
 ## Integration Patterns
 
