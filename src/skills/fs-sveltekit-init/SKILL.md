@@ -38,9 +38,9 @@ description: Explicit command skill (/fs-sveltekit-init) to bootstrap a SOTA hig
 - **Containerization**: Generate a highly optimized, multi-stage `Dockerfile` using the official `oven/bun` image. It must build the SvelteKit app using `svelte-adapter-bun` and expose it as a standalone web server.
 - **Local Parity & Docker**: Generate a root `docker-compose.yml`. This must spin up two containers: a local PostgreSQL database and the SvelteKit application image.
 - **CI/CD Pipeline (GitHub Actions)**: Generate a `.github/workflows/docker-publish.yml` file. This GitHub Action must trigger on a push to the `main` branch and perform three steps:
-  1. Log in to the GitHub Container Registry (`ghcr.io`) using `GITHUB_TOKEN`.
+  1. Log in to the GitHub Container Registry (`ghcr.io`).
   2. Build the `Dockerfile` and push the tagged image to GHCR.
-  3. Execute a CapRover deployment using the CapRover CLI action, configured securely via GitHub Secrets (`CAPROVER_URL`, `CAPROVER_PASSWORD`, `CAPROVER_APP`, and targeting the newly built `ghcr.io` image).
+  3. Execute a CapRover deployment using the CapRover CLI action, configured securely via GitHub Secrets and targeting the newly built `ghcr.io` image.
 - **CapRover Definition**: Generate a `captain-definition` file structured for an image-based deployment (pointing to the `ghcr.io` image) as a local reference.
 
 **Instructional Context**: Generate a `GEMINI.md` file at the root of the project. The content of this file must be exactly:
