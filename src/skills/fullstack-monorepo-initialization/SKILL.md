@@ -56,7 +56,6 @@ description: Explicit command skill (/fullstack-monorepo-initialization) to boot
 
   ## Future-Proofing Directive
 
-  - AI agents and developers must actively resolve and utilize the `@latest` stable versions of all frameworks, CLIs, and dependencies.
   - Legacy code patterns must be explicitly rejected in favor of modern paradigms.
 
   ## Unified Application Container
