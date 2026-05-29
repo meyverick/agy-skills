@@ -12,9 +12,13 @@ description: Explicit command skill (/fullstack-monorepo-initialization) to boot
 
 ## Execution Protocol
 
-**Step 0: Secure Version Control**: Before generating any framework code, initialize a local Git repository. Immediately create a `.gitignore` file using a highly secure default-deny pattern (explicitly blocking all files by default, then selectively allowlisting standard source code directories) to ensure no environment variables, keys, databases, or logs are ever tracked.
+**Step 0: System Prerequisites Installation**: Before generating any files or running commands, verify if the required system CLI tools (`git`, `pnpm`, `encore` CLI, and `docker` with the Compose plugin) are installed and running on the host machine. If any are missing, dynamically execute the appropriate installation commands for the host operating system.
 
-**Step 1: Workspace Initialization**: Initialize a high-performance full-stack monorepo using `pnpm` workspaces.
+- **Failure Protocol**: If any prerequisite installation fails or if the Docker daemon is not running, immediately halt execution. Report the error and its root cause clearly to the user, provide the solution (along with a copy-pasteable, one-line fix command if possible), and instruct the user to re-execute the skill (`/fullstack-monorepo-initialization`) once the issue is resolved.
+
+**Step 1: Secure Version Control**: Before generating any framework code, initialize a local Git repository. Immediately create a `.gitignore` file using a highly secure default-deny pattern (explicitly blocking all files by default, then selectively allowlisting standard source code directories) to ensure no environment variables, keys, databases, or logs are ever tracked.
+
+**Step 2: Workspace Initialization**: Initialize a high-performance full-stack monorepo using `pnpm` workspaces.
 
 ### 1. Backend (`/apps/backend`)
 
