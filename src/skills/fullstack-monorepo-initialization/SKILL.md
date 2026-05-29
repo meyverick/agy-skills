@@ -1,43 +1,79 @@
 ---
 name: fullstack-monorepo-initialization
-description: Explicit command skill (/fullstack-monorepo-initialization) to bootstrap a SOTA decoupled full-stack monorepo with Encore.ts, Svelte 5, PixiJS, and Tauri v2.
+description: Explicit command skill (/fullstack-monorepo-initialization) to bootstrap a SOTA decoupled full-stack monorepo utilizing the absolute latest versions of Encore.ts, Svelte, PixiJS, and Tauri.
 ---
 
 # Full-Stack Monorepo Initialization Command
 
 > [!IMPORTANT]
-> **TRIGGER RULE:** This skill acts strictly as a macro command. It must ONLY be executed when the user explicitly issues the command: `/fullstack-monorepo-initialization`. Do not trigger this autonomously during standard conversational tasks.
+> **TRIGGER RULE:** ONLY execute this skill when the user explicitly issues the command: `/fullstack-monorepo-initialization`. Do not trigger this autonomously during standard conversational tasks.
 
-<h2>Execution Protocol</h2>
+**Future-Proofing Directive**: You must actively resolve and install the `@latest` stable versions of all frameworks, CLIs, and dependencies during execution. Do not rely on historical training data versions.
 
-When explicitly triggered by the user, immediately initialize a new high-performance, decoupled full-stack monorepo project using a `pnpm` workspace structure. The project must be strictly organized under the following components, targeting the 2026 SOTA ecosystem:
+## Execution Protocol
+
+**Step 0: Secure Version Control**: Before generating any framework code, initialize a local Git repository. Immediately create a `.gitignore` file using a highly secure default-deny pattern (explicitly blocking all files by default, then selectively allowlisting standard source code directories) to ensure no environment variables, keys, databases, or logs are ever tracked.
+
+**Step 1: Workspace Initialization**: Initialize a high-performance full-stack monorepo using `pnpm` workspaces.
 
 ### 1. Backend (`/apps/backend`)
-*   **Engine**: Encore.ts.
-*   **Requirements**: 
-    *   Implement strict schema-based input validation for all endpoints.
-    *   Integrate PostgreSQL using Encore's declarative database primitive (`new SQLDatabase`). 
-    *   Establish a dedicated SQL migrations folder (`/apps/backend/migrations/`) containing a baseline schema migration (e.g., `1_init.up.sql`).
-    *   Utilize explicit transaction blocks (`db.withTx`) for all database mutations to maintain strict ACID compliance.
-    *   Externalize all system credentials and database connection strings via 12-Factor environment variables.
+
+- **Stack**: Latest Encore.ts with the latest stable PostgreSQL container.
+- **Requirements**: Initialize an Encore declarative `SQLDatabase` with a `/migrations` folder and a baseline `1_init.up.sql` file.
 
 ### 2. Frontend (`/apps/frontend`)
-*   **Engine**: Pure Svelte 5 Single-Page Application (SPA) built with Vite.
-*   **State Management**: Isolate UI state using Svelte 5 Runes (`$state`, `$derived`). Integrate TanStack Query for caching server state.
-*   **Graphics Integration**: Integrate PixiJS v8 (utilizing native WebGPU rendering) wrapped in a custom Svelte component. You must manage the Pixi application's initialization and disposal strictly inside a Svelte 5 `$effect` cleanup return function to prevent WebGL memory leaks.
+
+- **Stack**: Pure Svelte (latest version, enforcing modern paradigms) built with Vite, TanStack Query for caching, and PixiJS (latest version, targeting WebGPU).
+- **Requirements**: Consume Encore's native type-safe TypeScript client SDK. Manage the PixiJS initialization and cleanup safely inside Svelte's modern effect lifecycle.
 
 ### 3. Client Shell (`/apps/tauri`)
-*   **Engine**: Tauri v2.
-*   **Requirements**: Package the Svelte frontend into a secure, pure client shell supporting both desktop (macOS, Windows, Linux) and mobile (iOS, Android) platforms. The frontend must dynamic-load its target API base URL via Vite environment variables to transition smoothly between local development and remote production backends.
 
-<h2>Integration Patterns</h2>
+- **Stack**: Latest Tauri (must support modern multi-platform desktop and mobile builds).
+- **Requirements**: Package the frontend as a pure client shell for desktop (macOS/Windows/Linux) and mobile (iOS/Android). Configure Vite to dynamically load API base URLs via environment variables.
 
-When generating the architecture and code for this monorepo, adhere strictly to the following integration patterns:
+## Integration & Deployment
 
-*   **API Contracts**: Generate and consume Encore's native type-safe TypeScript client SDK within the Svelte frontend to enforce strict compiler-level API contracts.
-*   **Observability**: Ensure all frontend requests originating from Tauri or the web client propagate structured trace parent and unique `request_id` headers to feed Encore's native structured logging engine.
-*   **CapRover Single-Container Build**: Configure Vite to output Svelte production assets directly into the backend directory. Utilize Encore's high-performance native Rust `api.static` route with a fallback path (`/!path`) to host the SPA assets directly from the compiled Encore binary. Explicitly set `notFound` to `index.html` and `notFoundStatus` to `200` to allow client-side routing fallback.
-*   **PostgreSQL & CapRover DB Mapping**: Provide a root-level `infra.config.json` template configured for self-hosting. Map Encore's logical database declaration to an external, self-hosted PostgreSQL container inside CapRover (utilizing the environment variable mapping `ENCORE_DB_CONN_<db_name>` pointing to a CapRover-managed PostgreSQL instance).
-*   **Local Setup & Repository**: Provide the exact terminal shell scripts utilizing the GitHub CLI (`gh`) to initialize Git local to the workspace, set `main` as the primary branch, and create a remote private GitHub repository named exactly after the workspace folder. Initialize a `.gitignore` file using a highly secure default-deny pattern, enforcing explicit security blocks on environment files (`.env`), keys, credentials, and logs. Instruct the user to use `git ls-files` to verify that no sensitive files are tracked in the Git index, and exclude common compilation artifacts.
-*   **Autonomous Dependency Management**: Verify missing dependencies (e.g., CLIs, packages) prior to execution and directly execute shell commands to install them autonomously. Do not ask the user for permission when installing missing dependencies except if required. If permission is required, provide a one-liner command that the user can copy-paste to install the missing dependency, and only proceed with execution after confirming installation.
-*   **Instructional Context Generation**: Generate a `GEMINI.md` file at the root of the project to serve as the master instructional context for AI assistants during future maintenance cycles. This file must explicitly document the monorepo architecture, the exact technologies used (including PostgreSQL migration paths), and core maintenance constraints.
+- **Unified Application Container**: Configure Vite to output Svelte production assets directly into the backend directory. Use Encore's native `api.static` route to serve the Svelte SPA alongside the API (ensuring `notFound` falls back to `index.html` with a `200` status).
+- **Local Parity & Docker**: Generate a root `docker-compose.yml` and `infra.config.json`. These must spin up two containers: a local PostgreSQL database and the unified Encore+Svelte application image.
+- **CapRover Deployment**: Generate a `captain-definition` file structured for an image-based deployment. The documented workflow must be: build image locally -> verify in local Docker Compose -> push to registry -> deploy prebuilt image to CapRover.
+- **Instructional Context**: Generate a `GEMINI.md` file at the root of the project. The content of this file must be exactly:
+
+  ```markdown
+  # Full-Stack Monorepo Architecture Context
+
+  ## Architecture
+
+  This project is a high-performance, decoupled full-stack monorepo:
+
+  - **Workspace**: Managed exclusively via `pnpm` workspaces.
+  - **Backend (`/apps/backend`)**: Encore.ts with PostgreSQL.
+  - **Frontend (`/apps/frontend`)**: Latest Svelte SPA built with Vite, TanStack Query for caching, and latest PixiJS for native WebGPU rendering.
+  - **Client Shell (`/apps/tauri`)**: Latest Tauri, providing a secure pure client shell for desktop and mobile.
+
+  ## Future-Proofing Directive
+
+  - AI agents and developers must actively resolve and utilize the `@latest` stable versions of all frameworks, CLIs, and dependencies.
+  - Legacy code patterns must be explicitly rejected in favor of modern paradigms.
+
+  ## Unified Application Container
+
+  - The Svelte frontend production assets are output directly into the backend directory.
+  - Encore natively serves the Svelte SPA alongside the API using its high-performance `api.static` route, ensuring fallback to `index.html` with a `200 OK` status for client-side routing.
+
+  ## Local Parity & Docker
+
+  - The project uses a root `docker-compose.yml` and `infra.config.json` to spin up a local PostgreSQL database container alongside the unified Encore+Svelte application image.
+  - This guarantees exact parity between local development testing and the production environment.
+
+  ## CapRover Deployment
+
+  - **Deployment Workflow**:
+    1. Build the unified Docker image locally.
+    2. Verify parity locally using Docker Compose.
+    3. Push the compiled image to a private container registry.
+    4. Deploy the prebuilt image to CapRover using the `captain-definition` file (Image-based deployment).
+
+  ## Security & Version Control
+
+  - **.gitignore**: Utilizes a highly secure default-deny pattern (blocking everything by default, then selectively allowlisting source directories) to strictly prevent the accidental commit of `.env` files, local configurations, API keys, and databases.
+  ```
