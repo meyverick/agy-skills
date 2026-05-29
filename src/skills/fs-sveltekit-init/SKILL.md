@@ -35,7 +35,7 @@ description: Explicit command skill (/fs-sveltekit-init) to bootstrap a SOTA hig
 
 ## Integration & Deployment
 
-- **Containerization**: Generate a highly optimized, multi-stage `Dockerfile` using the official `oven/bun` image. It must build the SvelteKit app and expose it as a standalone web server.
+- **Containerization**: Generate a highly optimized, multi-stage `Dockerfile` using the official `oven/bun` image. It must build the SvelteKit app using `svelte-adapter-bun` and expose it as a standalone web server.
 - **Local Parity & Docker**: Generate a root `docker-compose.yml`. This must spin up two containers: a local PostgreSQL database and the SvelteKit application image.
 - **CI/CD Pipeline (GitHub Actions)**: Generate a `.github/workflows/docker-publish.yml` file. This GitHub Action must trigger on a push to the `main` branch and perform three steps:
   1. Log in to the GitHub Container Registry (`ghcr.io`) using `GITHUB_TOKEN`.
