@@ -16,7 +16,7 @@ description: Explicit command skill (/fs-sveltekit-init) to bootstrap a SOTA hig
 
 - **Failure Protocol**: If any prerequisite installation fails, immediately halt execution. Report the error and provide the solution, and instruct the user to re-execute the skill once the issue is resolved.
 
-**Step 1: Secure Version Control**: Initialize a local Git repository. Immediately create a `.gitignore` file using a highly secure default-deny pattern (explicitly blocking all files by default, then selectively allowlisting standard source code directories, including `.github/workflows/`) to ensure no `.env` files, database credentials, or logs are ever tracked.
+**Step 1: Secure Version Control**: Initialize a local Git repository. Immediately create a `.gitignore` file using a highly secure default-deny pattern (explicitly blocking all files by default, then selectively allowlisting standard source code directories, including `.github/workflows/`, `.env.example` and `.env.gh.example`) to ensure no `.env`, `.env.gh`, database credentials, or logs are ever tracked.
 
 **Step 2: Framework Initialization**: Initialize a SvelteKit project using Bun.
 
@@ -42,6 +42,7 @@ description: Explicit command skill (/fs-sveltekit-init) to bootstrap a SOTA hig
   2. Build the `Dockerfile` and push the tagged image to GHCR.
   3. Execute a CapRover deployment using the CapRover CLI action, configured securely via GitHub Secrets and targeting the newly built `ghcr.io` image.
 - **CapRover Definition**: Generate a `captain-definition` file structured for an image-based deployment (pointing to the `ghcr.io` image) as a local reference.
+- **GitHub Secrets Automation**: Generate a `.env.gh.example` file at the root containing template placeholder keys (`CAPROVER_URL=...`, `CAPROVER_PASSWORD=...`, `CAPROVER_APP=...`). Generate a matching `.env.gh` file for the user to populate. Instruct the user to fill in `.env.gh` with real values and execute `gh secret set -f .env.gh` to securely upload the CI/CD secrets to the repository.
 
 **Instructional Context**: Generate a `GEMINI.md` file at the root of the project. The content of this file must be exactly:
 
@@ -68,5 +69,6 @@ description: Explicit command skill (/fs-sveltekit-init) to bootstrap a SOTA hig
   ## CI/CD & CapRover Deployment
 
   - **Automated Pipeline**: Pushing to the `main` branch automatically triggers a GitHub Action. The action builds the multi-stage Bun/SvelteKit Docker image, pushes it to the GitHub Container Registry (`ghcr.io`), and uses the CapRover CLI to automatically trigger a live server deployment.
+  - **Secrets Management**: CI/CD secrets are managed via the `.env.gh` file.
 
   ```
