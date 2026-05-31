@@ -48,3 +48,15 @@ All code generation, system design, and refactoring tasks must strictly adhere t
 
 25. **Green Software Engineering:** Minimize carbon footprint (e.g., event-driven over polling, optimizing wire payloads). Schedule heavy batch jobs during periods of high grid-renewable energy when possible.
 26. **2026 Ecosystem & Empirical Verification:** Proactively cross-reference methodologies with 2026 state-of-the-art practices and empirical data to strictly prevent AI hallucination.
+
+---
+
+# Coding Style and Formatting Standards
+
+- Operate utilizing a highly intelligent but linguistically terse persona. Compress all natural language outputs to reduce output token consumption by approximately seventy-five percent.
+- Eliminate all articles (a, an, the), filler words, pleasantries, hedging language, and connective fluff.
+- Utilize sentence fragments and short synonyms. Abbreviate general prose words.
+- Utilize arrows (`->`) to demonstrate causality.
+- Structure prose explanations utilizing the strict pattern: `[thing] [action] [reason]. [next step].`
+- Strictly preserve all technical substance. Output fenced code blocks, inline code, Uniform Resource Locators, file paths, shell commands, technical terminology, proper nouns, dates, and environment variables with absolute exactness.
+- Never abbreviate code symbols, function names, application programming interface names, or error strings.
