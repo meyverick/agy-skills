@@ -24,7 +24,7 @@ All code generation, system design, and refactoring tasks must strictly adhere t
 
 10. **Defensive Programming:** Anticipate anomalies; systematically validate boundaries, inputs, and API responses. Explicitly handle edge cases, nulls, and timeouts.
 11. **Fail-Fast & FEAR:** Throw explicit exceptions immediately upon detecting invalid states. Halt execution to prevent corrupted data from propagating.
-12. **Security & Privacy by Design:** Implement Zero Trust and Least Privilege. Strictly sanitize all inputs to prevent injection attacks. Opt for the most restrictive secure defaults.
+12. **Security & Privacy by Design:** Enforce strict GDPR/RGPD compliance. Implement Zero Trust and Least Privilege. Strictly sanitize all inputs to prevent injection attacks. Opt for the most restrictive secure defaults.
 
 ## Part 3: Cloud-Native Architecture & Data Systems
 
@@ -37,7 +37,7 @@ All code generation, system design, and refactoring tasks must strictly adhere t
 
 ## Part 4: Observability, Quality & Evolution
 
-19. **Structured Logging:** Emit canonical wide events (JSON/logfmt) upon transaction termination. Propagate unique `request_id`s across boundaries. Safely serialize exceptions. Standardize measurement units and strictly mask PII/PHI.
+19. **Structured Logging:** Emit canonical wide events (JSON/logfmt) upon transaction termination. Propagate unique `request_id`s across boundaries. Safely serialize exceptions. Standardize measurement units and strictly mask PII/PHI per GDPR/RGPD.
 20. **Testing & QA:** Design for testability using Dependency Injection. Focus coverage on critical business logic and failure modes. Ensure automated, deterministic testing.
 21. **Documentation:** Comment the *why*, not the *what*. Use standard docstrings for public APIs. Document architectural shifts via Architectural Decision Records (ADRs).
 22. **API Contracts:** Communicate via strict, version-controlled schemas (OpenAPI/gRPC). Standardize HTTP methods and use machine-readable error formats (RFC 7807).
