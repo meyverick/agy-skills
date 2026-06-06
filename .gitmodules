@@ -19,3 +19,7 @@
 [submodule "references/ai-product-from-scratch"]
 	path = references/ai-product-from-scratch
 	url = https://github.com/pguso/ai-product-from-scratch.git
+[submodule "references/Harmony"]
+	path = references/Harmony
+	url = https://github.com/pardeike/Harmony.git
+
