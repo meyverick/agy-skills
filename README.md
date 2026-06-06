@@ -104,6 +104,7 @@ These skills are fetched dynamically from remote repositories during synchroniza
 
 > [!NOTE]
 > These external extensions are integrated into this project to circumvent installation failures and runtime bugs encountered when attempting to retrieve them directly from their original upstream repositories.
+
 - **`modern-web-guidance`**: Search tool and best practices reference for modern Web API developments. Cloned from [GoogleChrome/modern-web-guidance](https://github.com/GoogleChrome/modern-web-guidance).
 - **`chrome-extensions`**: Guidelines and API specifications for Manifest V3 extension engineering. Cloned from [GoogleChrome/modern-web-guidance](https://github.com/GoogleChrome/modern-web-guidance).
 - **`find-skills`**: Discoverability helper utilities to search and install external agent skills. Cloned from [vercel-labs/skills](https://github.com/vercel-labs/skills).

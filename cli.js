@@ -141,6 +141,89 @@ function fetchExternalSkills(skillsToFetch, targetSkillsDir) {
   }
 }
 
+function checkUpdates(srcDir, targetDir) {
+  const srcSkillsDir = path.join(srcDir, 'skills');
+  const targetSkillsDir = path.join(targetDir, 'skills');
+  let updatesAvailable = [];
+
+  const pluginSrc = path.join(srcDir, 'plugin.json');
+  const pluginTarget = path.join(targetDir, 'plugin.json');
+  if (fs.existsSync(pluginSrc)) {
+    if (!fs.existsSync(pluginTarget) || fs.readFileSync(pluginSrc).toString() !== fs.readFileSync(pluginTarget).toString()) {
+      updatesAvailable.push('plugin.json');
+    }
+  }
+
+  const hooksSrc = path.join(srcDir, 'hooks.json');
+  const hooksTarget = path.join(targetDir, 'hooks.json');
+  if (fs.existsSync(hooksSrc)) {
+    if (!fs.existsSync(hooksTarget) || fs.readFileSync(hooksSrc).toString() !== fs.readFileSync(hooksTarget).toString()) {
+      updatesAvailable.push('hooks.json');
+    }
+  }
+
+  const rulesSrc = path.join(srcDir, 'rules');
+  const rulesTarget = path.join(targetDir, 'rules');
+  if (fs.existsSync(rulesSrc) && fs.existsSync(rulesTarget)) {
+    if (areDirsDifferent(rulesSrc, rulesTarget)) {
+      updatesAvailable.push('rules');
+    }
+  }
+
+  const existingSkills = fs.existsSync(targetSkillsDir) ? fs.readdirSync(targetSkillsDir) : [];
+  const externalSkills = ['modern-web-guidance', 'chrome-extensions', 'find-skills'];
+  const externalToCheck = [];
+
+  for (const skill of existingSkills) {
+    const srcSkillPath = path.join(srcSkillsDir, skill);
+    const targetSkillPath = path.join(targetSkillsDir, skill);
+    if (fs.existsSync(srcSkillPath)) {
+      if (areDirsDifferent(srcSkillPath, targetSkillPath)) {
+        updatesAvailable.push(`skill: ${skill}`);
+      }
+    } else if (externalSkills.includes(skill)) {
+      externalToCheck.push(skill);
+    }
+  }
+
+  if (externalToCheck.length > 0) {
+    const tempParentDir = path.join(os.tmpdir(), `agy-skills-check-${Date.now()}`);
+    fs.mkdirSync(tempParentDir, { recursive: true });
+    try {
+      const fetchMwg = externalToCheck.includes('modern-web-guidance') || externalToCheck.includes('chrome-extensions');
+      const fetchFindSkills = externalToCheck.includes('find-skills');
+
+      if (fetchMwg) {
+        const mwgTemp = path.join(tempParentDir, 'mwg');
+        execSync(`git clone --depth 1 https://github.com/GoogleChrome/modern-web-guidance.git "${mwgTemp}"`, { stdio: 'ignore' });
+        if (externalToCheck.includes('modern-web-guidance') && areDirsDifferent(path.join(mwgTemp, 'skills', 'modern-web-guidance'), path.join(targetSkillsDir, 'modern-web-guidance'))) {
+          updatesAvailable.push('skill: modern-web-guidance');
+        }
+        if (externalToCheck.includes('chrome-extensions') && areDirsDifferent(path.join(mwgTemp, 'skills', 'chrome-extensions'), path.join(targetSkillsDir, 'chrome-extensions'))) {
+          updatesAvailable.push('skill: chrome-extensions');
+        }
+      }
+
+      if (fetchFindSkills) {
+        const vercelTemp = path.join(tempParentDir, 'vercel');
+        execSync(`git clone --depth 1 https://github.com/vercel-labs/skills.git "${vercelTemp}"`, { stdio: 'ignore' });
+        if (areDirsDifferent(path.join(vercelTemp, 'skills', 'find-skills'), path.join(targetSkillsDir, 'find-skills'))) {
+          updatesAvailable.push('skill: find-skills');
+        }
+      }
+    } catch (err) {
+      // ignore fetching errors during check
+    } finally {
+      fs.rmSync(tempParentDir, { recursive: true, force: true });
+    }
+  }
+
+  if (updatesAvailable.length > 0) {
+    console.log(`\n⚠️  [agy-skills] Updates are available for your installed skills/rules.`);
+    console.log(`Run 'bunx github:meyverick/agy-skills update' to apply them.\n`);
+  }
+}
+
 function syncSkills(srcDir, targetDir, requestedSkills = null, isUpdateMode = false) {
   const srcSkillsDir = path.join(srcDir, 'skills');
   const targetSkillsDir = path.join(targetDir, 'skills');
@@ -150,7 +233,7 @@ function syncSkills(srcDir, targetDir, requestedSkills = null, isUpdateMode = fa
   fs.mkdirSync(targetSkillsDir, { recursive: true });
 
   // Clean any top-level orphaned files/folders in targetDir except allowed ones
-  const allowedTopLevel = ['plugin.json', 'rules', 'skills'];
+  const allowedTopLevel = ['plugin.json', 'rules', 'skills', 'hooks.json'];
   if (fs.existsSync(targetDir)) {
     const topLevel = fs.readdirSync(targetDir);
     for (const item of topLevel) {
@@ -163,6 +246,9 @@ function syncSkills(srcDir, targetDir, requestedSkills = null, isUpdateMode = fa
   // Copy/overwrite non-skills assets (plugin.json and rules)
   fs.cpSync(path.join(srcDir, 'plugin.json'), path.join(targetDir, 'plugin.json'), { force: true });
   fs.cpSync(path.join(srcDir, 'rules'), path.join(targetDir, 'rules'), { recursive: true, force: true });
+  if (fs.existsSync(path.join(srcDir, 'hooks.json'))) {
+    fs.cpSync(path.join(srcDir, 'hooks.json'), path.join(targetDir, 'hooks.json'), { force: true });
+  }
 
   const existingSkills = fs.existsSync(targetSkillsDir) ? fs.readdirSync(targetSkillsDir) : [];
   const externalSkills = ['modern-web-guidance', 'chrome-extensions', 'find-skills'];
@@ -339,6 +425,15 @@ if (command === 'install') {
     console.error(`❌ Update failed: ${error.message}`);
     process.exit(1);
   }
+} else if (command === 'check') {
+  try {
+    if (!fs.existsSync(srcDir)) {
+      throw new Error(`Source directory 'src' does not exist at ${srcDir}`);
+    }
+    checkUpdates(srcDir, targetDir);
+  } catch (error) {
+    // silently fail check to not disrupt startup
+  }
 } else {
-  console.log("Usage: bunx github:meyverick/agy-skills [install|update|uninstall]");
+  console.log("Usage: bunx github:meyverick/agy-skills [install|update|uninstall|check]");
 }
