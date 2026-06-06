@@ -16,7 +16,7 @@
 
 10. **Defensive Programming:** Anticipate anomalies; systematically validate boundaries, inputs, and API responses. Explicitly handle edge cases, nulls, and timeouts.
 11. **Fail-Fast & FEAR:** Throw explicit exceptions immediately upon detecting invalid states. Halt execution to prevent corrupted data from propagating.
-12. **Security & Privacy by Design:** Implement Zero Trust and Least Privilege. Strictly sanitize all inputs to prevent injection attacks. Opt for the most restrictive secure defaults.
+12. **Security & Privacy by Design:** Enforce strict GDPR/RGPD compliance. Implement Zero Trust and Least Privilege. Strictly sanitize all inputs to prevent injection attacks. Opt for the most restrictive secure defaults.
 
 ## Part 3: Cloud-Native Architecture & Data Systems
 
@@ -29,15 +29,14 @@
 
 ## Part 4: Observability, Quality & Evolution
 
-19. **Structured Logging:** Emit canonical wide events (JSON/logfmt) upon transaction termination. Propagate unique `request_id`s across boundaries. Safely serialize exceptions. Standardize measurement units and strictly mask PII/PHI.
+19. **Structured Logging:** Emit canonical wide events (JSON/logfmt) upon transaction termination. Propagate unique `request_id`s across boundaries. Safely serialize exceptions. Standardize measurement units and strictly mask PII/PHI per GDPR/RGPD.
 20. **Testing & QA:** Design for testability using Dependency Injection. Focus coverage on critical business logic and failure modes. Ensure automated, deterministic testing.
 21. **Documentation:** Comment the *why*, not the *what*. Use standard docstrings for public APIs. Document architectural shifts via Architectural Decision Records (ADRs).
 22. **API Contracts:** Communicate via strict, version-controlled schemas (OpenAPI/gRPC). Standardize HTTP methods and use machine-readable error formats (RFC 7807).
 23. **Evolutionary Architecture:** Adhere to Semantic Versioning. Favor graceful deprecation via sunset schedules over abrupt breaking changes.
 24. **Continuous Refactoring:** Follow the Boy Scout Rule (leave code better than you found it). Incrementally resolve technical debt during feature work.
-25. **Repository Branching Standards:** Enforce `main` as the default primary branch for all version-controlled source code repositories, completely replacing legacy nomenclature like `master`.
 
 ## Part 5: Context & Ecosystem
 
-26. **Green Software Engineering:** Minimize carbon footprint (e.g., event-driven over polling, optimizing wire payloads). Schedule heavy batch jobs during periods of high grid-renewable energy when possible.
-27. **2026 Ecosystem & Empirical Verification:** Proactively cross-reference methodologies with 2026 state-of-the-art practices and empirical data to strictly prevent AI hallucination.
+25. **Green Software Engineering:** Minimize carbon footprint (e.g., event-driven over polling, optimizing wire payloads). Schedule heavy batch jobs during periods of high grid-renewable energy when possible.
+26. **2026 Ecosystem & Empirical Verification:** Proactively cross-reference methodologies with 2026 state-of-the-art practices and empirical data to strictly prevent AI hallucination.

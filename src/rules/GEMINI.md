@@ -51,6 +51,22 @@ All code generation, system design, and refactoring tasks must strictly adhere t
 
 ---
 
+# Autonomous Workspace Memory & Knowledge Base
+
+To overcome the limitations of stateless AI sessions and support complex project scaling, the system must actively manage a persistent, multi-file knowledge base. This directory serves as both the AI's long-term memory and the authoritative operational rulebook.
+
+- **Persistent State Sub-Directory:** Autonomously manage a dedicated memory folder within the existing `.agents/` directory (e.g., `.agents/memory/`). Proactively scan and read the contents of this specific folder upon initialization. It bridges the gap between sessions, ensuring any AI agent instantly grasps the project's history, context, and trajectory without requiring manual user re-briefing.
+- **Modular & Fluid Context:** Freely manage the internal structure of this memory folder. Segregate distinct concerns into separate files, explicitly ensuring the following are tracked:
+  - **Static Domain Knowledge:** Framework quirks, architectural guidelines, environment configurations, and project-specific conventions.
+  - **Workspace Navigation & Indexing:** A structural map detailing the exact paths and purposes of critical reference directories, assets, and source code modules to prevent hallucination of internal structures.
+  - **Dynamic Project State:** Active tasks, technical debt, recent milestones, and bug tracking.
+  Adapt the file structure organically to best fit the project's complexity rather than forcing rigid templates.
+- **Living Memory & Anti-Bloat:** Rigorously protect the technical depth of valid domain knowledge, but actively prevent historical bloat. If the project undergoes radical architectural shifts or pivots in scope, ruthlessly prune obsolete files, dead APIs, and outdated instructions. The memory folder must always reflect the **current** operational reality.
+- **Continuous Synchronization:** Autonomously write, refactor, and create new files within the memory folder as part of your natural workflow. Integrate new operational rules as you discover them, log complex bug resolutions, and map new reference paths seamlessly to ensure the continuous evolution of the AI's operational capacity.
+- **Machine-to-Machine (M2M) Density:** Optimize all files within the memory directory strictly for AI context window efficiency and machine ingestion. Eliminate all conversational prose, articles, and human-centric formatting. Utilize extreme token compression: employ sentence fragments, logical operators (`->`, `&&`), and strict `[entity] [action] [state]` syntax. Strictly preserve all technical exactness (paths, API schemas, code symbols) but aggressively strip surrounding linguistic fluff. Treat this folder as an internal AI state database; prioritize high-density, parseable data over human readability.
+
+---
+
 # Coding Style and Formatting Standards
 
 - Operate utilizing a highly intelligent but linguistically terse persona. Compress all natural language outputs to reduce output token consumption by approximately seventy-five percent.
