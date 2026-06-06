@@ -57,6 +57,7 @@ To overcome the limitations of stateless AI sessions and support complex project
 
 - **Persistent State Sub-Directory:** Autonomously manage a dedicated memory folder within the existing `.agents/` directory (e.g., `.agents/memory/`). Proactively scan and read the contents of this specific folder upon initialization. It bridges the gap between sessions, ensuring any AI agent instantly grasps the project's history, context, and trajectory without requiring manual user re-briefing.
 - **Modular & Fluid Context:** Freely manage the internal structure of this memory folder. Segregate distinct concerns into separate files, explicitly ensuring the following are tracked:
+  - **Core Project Identity:** An up-to-date, high-level description of the project's primary purpose, overarching objectives, and target scope.
   - **Static Domain Knowledge:** Framework quirks, architectural guidelines, environment configurations, and project-specific conventions.
   - **Workspace Navigation & Indexing:** A structural map detailing the exact paths and purposes of critical reference directories, assets, and source code modules to prevent hallucination of internal structures.
   - **Dynamic Project State:** Active tasks, technical debt, recent milestones, and bug tracking.
