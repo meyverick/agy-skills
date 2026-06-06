@@ -30,6 +30,14 @@ To update previously installed skills (both local and dynamically fetched `extra
 bunx github:meyverick/agy-skills update
 ```
 
+### Checking for Updates
+
+To check if your installed skills, rules, or hooks are up to date against the remote repository without applying changes, run:
+
+```bash
+bunx github:meyverick/agy-skills check
+```
+
 On Windows, the skills and rules are installed at:
 `%userprofile%/.gemini/config/plugins/agy-skills/`
 
@@ -79,6 +87,7 @@ This plugin provides 41 highly cohesive, validated skills complying with the Age
 - **`unity-javascript-bridge-integration`**: High-performance browser integrations via custom `.jslib` scripts.
 - **`unity-dots-programming`**: Employs Entity Component System (ECS) architectures inside Unity.
 - **`unity-burst-optimization`**: Harnesses LLVM-backed Burst compilers for multithreaded performance jobs.
+- **`harmony-patching-mastery`**: Guides safe, non-destructive C# runtime patches for Unity/Mono games using the Harmony library.
 - **`cocos-playbuild-integration`**: Decoupled macros mapping for playable builds out of Cocos Creator.
 - **`oops-framework-development`**: Implements OOP MVC architectures and modules inside Cocos.
 - **`html5-game-migration`**: Migrates full-scale game architectures (Unity/Cocos) to responsive HTML5 engines.
