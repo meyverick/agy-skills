@@ -1,5 +1,10 @@
 {
-  "on_agent_init": {
-    "command": "bunx --silent github:meyverick/agy-skills check"
+  "update-check": {
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "bunx --silent github:meyverick/agy-skills check"
+      }
+    ]
   }
 }
