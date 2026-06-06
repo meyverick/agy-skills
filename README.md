@@ -98,6 +98,13 @@ This plugin provides 41 highly cohesive, validated skills complying with the Age
 - **`svg-emote-generation`**: Perfectly looping Vector Graphics optimization and styling.
 - **`virtual-avatar-engineering`**: High-performance WebGL/Canvas visual avatars utilizing MediaPipe ML models in web workers.
 
+### 6. Dynamic & External Extensions (`--skills=extra`)
+
+These skills are fetched dynamically from remote repositories during synchronization:
+- **`modern-web-guidance`**: Search tool and best practices reference for modern Web API developments.
+- **`chrome-extensions`**: Guidelines and API specifications for Manifest V3 extension engineering.
+- **`find-skills`**: Discoverability helper utilities to search and install external agent skills.
+
 ---
 
 ## Repository Structure
