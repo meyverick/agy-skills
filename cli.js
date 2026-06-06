@@ -68,6 +68,11 @@ const SKILL_GROUPS = {
     'monetization-sdk-integration',
     'mraid-ad-integration',
     'lightweight-analytics-integration'
+  ],
+  extra: [
+    'modern-web-guidance',
+    'chrome-extensions',
+    'find-skills'
   ]
 };
 
@@ -103,6 +108,39 @@ function areDirsDifferent(dirA, dirB) {
   return false;
 }
 
+function fetchExternalSkills(skillsToFetch, targetSkillsDir) {
+  if (skillsToFetch.length === 0) return;
+  const tempParentDir = path.join(os.tmpdir(), `agy-skills-temp-${Date.now()}`);
+  fs.mkdirSync(tempParentDir, { recursive: true });
+  try {
+    const fetchMwg = skillsToFetch.includes('modern-web-guidance') || skillsToFetch.includes('chrome-extensions');
+    const fetchFindSkills = skillsToFetch.includes('find-skills');
+
+    if (fetchMwg) {
+      const mwgTemp = path.join(tempParentDir, 'mwg');
+      console.log('📦 Fetching latest modern-web-guidance and chrome-extensions skills from GoogleChrome/modern-web-guidance...');
+      execSync(`git clone --depth 1 https://github.com/GoogleChrome/modern-web-guidance.git "${mwgTemp}"`, { stdio: 'ignore' });
+      if (skillsToFetch.includes('modern-web-guidance')) {
+        fs.cpSync(path.join(mwgTemp, 'skills', 'modern-web-guidance'), path.join(targetSkillsDir, 'modern-web-guidance'), { recursive: true, force: true });
+      }
+      if (skillsToFetch.includes('chrome-extensions')) {
+        fs.cpSync(path.join(mwgTemp, 'skills', 'chrome-extensions'), path.join(targetSkillsDir, 'chrome-extensions'), { recursive: true, force: true });
+      }
+    }
+
+    if (fetchFindSkills) {
+      const vercelTemp = path.join(tempParentDir, 'vercel');
+      console.log('📦 Fetching latest find-skills skill from vercel-labs/skills...');
+      execSync(`git clone --depth 1 https://github.com/vercel-labs/skills.git "${vercelTemp}"`, { stdio: 'ignore' });
+      fs.cpSync(path.join(vercelTemp, 'skills', 'find-skills'), path.join(targetSkillsDir, 'find-skills'), { recursive: true, force: true });
+    }
+  } catch (err) {
+    console.warn(`⚠️ Warning: Failed to fetch external skills dynamically (${err.message}).`);
+  } finally {
+    fs.rmSync(tempParentDir, { recursive: true, force: true });
+  }
+}
+
 function syncSkills(srcDir, targetDir, requestedSkills = null, isUpdateMode = false) {
   const srcSkillsDir = path.join(srcDir, 'skills');
   const targetSkillsDir = path.join(targetDir, 'skills');
@@ -127,9 +165,12 @@ function syncSkills(srcDir, targetDir, requestedSkills = null, isUpdateMode = fa
   fs.cpSync(path.join(srcDir, 'rules'), path.join(targetDir, 'rules'), { recursive: true, force: true });
 
   const existingSkills = fs.existsSync(targetSkillsDir) ? fs.readdirSync(targetSkillsDir) : [];
+  const externalSkills = ['modern-web-guidance', 'chrome-extensions', 'find-skills'];
 
   if (isUpdateMode) {
     const updated = [];
+    const externalToUpdate = [];
+
     for (const skill of existingSkills) {
       const srcSkillPath = path.join(srcSkillsDir, skill);
       const targetSkillPath = path.join(targetSkillsDir, skill);
@@ -138,8 +179,16 @@ function syncSkills(srcDir, targetDir, requestedSkills = null, isUpdateMode = fa
           fs.cpSync(srcSkillPath, targetSkillPath, { recursive: true, force: true });
           updated.push(skill);
         }
+      } else if (externalSkills.includes(skill)) {
+        externalToUpdate.push(skill);
       }
     }
+
+    if (externalToUpdate.length > 0) {
+      fetchExternalSkills(externalToUpdate, targetSkillsDir);
+      updated.push(...externalToUpdate);
+    }
+
     if (updated.length > 0) {
       console.log(`🔄 Updated existing skills (${updated.length}):`);
       updated.forEach(s => console.log(`   - ${s}`));
@@ -156,8 +205,11 @@ function syncSkills(srcDir, targetDir, requestedSkills = null, isUpdateMode = fa
 
   const allLocalSkills = fs.existsSync(srcSkillsDir) ? fs.readdirSync(srcSkillsDir) : [];
   let localSkills = [];
+  let desiredExternalSkills = [];
+
   if (requestedSkills.includes('all')) {
     localSkills = allLocalSkills;
+    desiredExternalSkills = [...externalSkills];
   } else {
     const requestedSet = new Set();
     for (const req of requestedSkills) {
@@ -168,24 +220,24 @@ function syncSkills(srcDir, targetDir, requestedSkills = null, isUpdateMode = fa
       }
     }
     localSkills = allLocalSkills.filter(s => requestedSet.has(s));
+    desiredExternalSkills = externalSkills.filter(s => requestedSet.has(s));
   }
 
   const added = [];
   const updated = [];
   const removed = [];
-  const externalSkills = ['modern-web-guidance', 'chrome-extensions', 'find-skills'];
 
   // Process removals
   for (const skill of existingSkills) {
     const isLocal = localSkills.includes(skill);
-    const isExternal = externalSkills.includes(skill);
+    const isExternal = desiredExternalSkills.includes(skill);
     if (!isLocal && !isExternal) {
       fs.rmSync(path.join(targetSkillsDir, skill), { recursive: true, force: true });
       removed.push(skill);
     }
   }
 
-  // Process additions and updates
+  // Process additions and updates for local skills
   for (const skill of localSkills) {
     const srcSkillPath = path.join(srcSkillsDir, skill);
     const targetSkillPath = path.join(targetSkillsDir, skill);
@@ -199,6 +251,22 @@ function syncSkills(srcDir, targetDir, requestedSkills = null, isUpdateMode = fa
         updated.push(skill);
       }
     }
+  }
+
+  // Process additions and updates for external skills
+  const externalToAddOrUpdate = [];
+  for (const skill of desiredExternalSkills) {
+    if (!existingSkills.includes(skill)) {
+      externalToAddOrUpdate.push(skill);
+      added.push(skill);
+    } else {
+      externalToAddOrUpdate.push(skill);
+      updated.push(skill);
+    }
+  }
+
+  if (externalToAddOrUpdate.length > 0) {
+    fetchExternalSkills(externalToAddOrUpdate, targetSkillsDir);
   }
 
   // Print results
@@ -239,53 +307,6 @@ if (command === 'install') {
     syncSkills(srcDir, targetDir, requestedSkills);
 
     console.log(`\n🎉 Success! Synchronized all core plugin content in ${targetDir}`);
-    console.log("💡 Tip: To install extra external skills (modern-web-guidance, chrome-extensions, find-skills), run:");
-    console.log("   bunx github:meyverick/agy-skills extra");
-  } catch (error) {
-    console.error(`❌ Installation failed: ${error.message}`);
-    process.exit(1);
-  }
-} else if (command === 'extra') {
-  console.log(`🚀 Installing agy-skills with extra external skills to ${targetDir}...`);
-  try {
-    if (!fs.existsSync(srcDir)) {
-      throw new Error(`Source directory 'src' does not exist at ${srcDir}`);
-    }
-
-    // 1. Sync local src contents (core skills and metadata)
-    syncSkills(srcDir, targetDir, requestedSkills);
-
-    // 2. Fetch external skills dynamically using git clone to a temporary folder
-    const tempParentDir = path.join(os.tmpdir(), `agy-skills-temp-${Date.now()}`);
-    fs.mkdirSync(tempParentDir, { recursive: true });
-
-    const targetSkillsDir = path.join(targetDir, 'skills');
-
-    try {
-      // Clone GoogleChrome/modern-web-guidance
-      const mwgTemp = path.join(tempParentDir, 'mwg');
-      console.log('📦 Fetching latest modern-web-guidance and chrome-extensions skills from GoogleChrome/modern-web-guidance...');
-      execSync(`git clone --depth 1 https://github.com/GoogleChrome/modern-web-guidance.git "${mwgTemp}"`, { stdio: 'ignore' });
-      
-      fs.cpSync(path.join(mwgTemp, 'skills', 'modern-web-guidance'), path.join(targetSkillsDir, 'modern-web-guidance'), { recursive: true, force: true });
-      fs.cpSync(path.join(mwgTemp, 'skills', 'chrome-extensions'), path.join(targetSkillsDir, 'chrome-extensions'), { recursive: true, force: true });
-
-      // Clone vercel-labs/skills
-      const vercelTemp = path.join(tempParentDir, 'vercel');
-      console.log('📦 Fetching latest find-skills skill from vercel-labs/skills...');
-      execSync(`git clone --depth 1 https://github.com/vercel-labs/skills.git "${vercelTemp}"`, { stdio: 'ignore' });
-
-      fs.cpSync(path.join(vercelTemp, 'skills', 'find-skills'), path.join(targetSkillsDir, 'find-skills'), { recursive: true, force: true });
-
-      console.log('✅ Success! Fetched and installed all external skills.');
-    } catch (err) {
-      console.warn(`⚠️ Warning: Failed to fetch external skills dynamically (${err.message}).`);
-    } finally {
-      // Cleanup tempParentDir
-      fs.rmSync(tempParentDir, { recursive: true, force: true });
-    }
-
-    console.log(`\n🎉 Success! Installed all plugin and extra content into ${targetDir}`);
   } catch (error) {
     console.error(`❌ Installation failed: ${error.message}`);
     process.exit(1);
@@ -319,5 +340,5 @@ if (command === 'install') {
     process.exit(1);
   }
 } else {
-  console.log("Usage: bunx github:meyverick/agy-skills [install|update|uninstall|extra]");
+  console.log("Usage: bunx github:meyverick/agy-skills [install|update|uninstall]");
 }

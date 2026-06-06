@@ -14,16 +14,17 @@ bunx github:meyverick/agy-skills
 
 ### Targeted Skill Installation
 
-To install specific skills, taxonomic groups (e.g., `core`, `web`), or all skills at once (`all`), utilize the `--skills=` parameter with a comma-separated list:
+To install specific skills, taxonomic groups (e.g., `core`, `web`), or the remote external skills group (`extra`), utilize the `--skills=` parameter with a comma-separated list:
 
 ```bash
 bunx github:meyverick/agy-skills --skills=core,rust-systems-programming,web
+bunx github:meyverick/agy-skills --skills=extra
 bunx github:meyverick/agy-skills --skills=all
 ```
 
 ### Updating Existing Skills
 
-To update previously installed skills without mutating uninstalled directories, utilize the `update` command:
+To update previously installed skills (both local and dynamically fetched `extra` skills) without mutating uninstalled directories, run:
 
 ```bash
 bunx github:meyverick/agy-skills update
