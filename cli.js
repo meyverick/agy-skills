@@ -5,13 +5,12 @@ import os from 'os';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
 
-// Recreate __dirname for ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const PLUGIN_NAME = 'agy-skills';
-const srcDir = path.join(__dirname, 'src');
-const targetDir = path.join(os.homedir(), '.gemini', 'config', 'plugins', PLUGIN_NAME);
+const srcDir = __dirname;
+const targetDir = path.join(os.homedir(), '.gemini');
+const targetSkillsDir = path.join(targetDir, 'skills');
 
 const SKILL_GROUPS = {
   core: [
@@ -141,35 +140,39 @@ function fetchExternalSkills(skillsToFetch, targetSkillsDir) {
   }
 }
 
-function checkUpdates(srcDir, targetDir) {
-  const srcSkillsDir = path.join(srcDir, 'skills');
-  const targetSkillsDir = path.join(targetDir, 'skills');
+function checkUpdates() {
   let updatesAvailable = [];
 
-  const pluginSrc = path.join(srcDir, 'plugin.json');
-  const pluginTarget = path.join(targetDir, 'plugin.json');
-  if (fs.existsSync(pluginSrc)) {
-    if (!fs.existsSync(pluginTarget) || fs.readFileSync(pluginSrc).toString() !== fs.readFileSync(pluginTarget).toString()) {
-      updatesAvailable.push('plugin.json');
+  const geminiSrc = path.join(srcDir, 'GEMINI.md');
+  const geminiTarget = path.join(targetDir, 'GEMINI.md');
+  if (fs.existsSync(geminiSrc)) {
+    if (!fs.existsSync(geminiTarget) || fs.readFileSync(geminiSrc).toString() !== fs.readFileSync(geminiTarget).toString()) {
+      updatesAvailable.push('GEMINI.md');
     }
   }
 
   const hooksSrc = path.join(srcDir, 'hooks.json');
   const hooksTarget = path.join(targetDir, 'hooks.json');
   if (fs.existsSync(hooksSrc)) {
-    if (!fs.existsSync(hooksTarget) || fs.readFileSync(hooksSrc).toString() !== fs.readFileSync(hooksTarget).toString()) {
+    if (!fs.existsSync(hooksTarget)) {
       updatesAvailable.push('hooks.json');
+    } else {
+      try {
+        const srcJson = JSON.parse(fs.readFileSync(hooksSrc, 'utf8'));
+        const targetJson = JSON.parse(fs.readFileSync(hooksTarget, 'utf8'));
+        for (const key of Object.keys(srcJson)) {
+          if (JSON.stringify(srcJson[key]) !== JSON.stringify(targetJson[key])) {
+            updatesAvailable.push(`hooks.json (${key})`);
+            break;
+          }
+        }
+      } catch (err) {
+        updatesAvailable.push('hooks.json');
+      }
     }
   }
 
-  const rulesSrc = path.join(srcDir, 'rules');
-  const rulesTarget = path.join(targetDir, 'rules');
-  if (fs.existsSync(rulesSrc) && fs.existsSync(rulesTarget)) {
-    if (areDirsDifferent(rulesSrc, rulesTarget)) {
-      updatesAvailable.push('rules');
-    }
-  }
-
+  const srcSkillsDir = path.join(srcDir, 'skills');
   const existingSkills = fs.existsSync(targetSkillsDir) ? fs.readdirSync(targetSkillsDir) : [];
   const externalSkills = ['modern-web-guidance', 'chrome-extensions', 'find-skills'];
   const externalToCheck = [];
@@ -212,7 +215,7 @@ function checkUpdates(srcDir, targetDir) {
         }
       }
     } catch (err) {
-      // ignore fetching errors during check
+      // ignore
     } finally {
       fs.rmSync(tempParentDir, { recursive: true, force: true });
     }
@@ -224,30 +227,42 @@ function checkUpdates(srcDir, targetDir) {
   }
 }
 
-function syncSkills(srcDir, targetDir, requestedSkills = null, isUpdateMode = false) {
+function mergeHooks(srcPath, targetPath) {
+  if (!fs.existsSync(srcPath)) return;
+  if (!fs.existsSync(targetPath)) {
+    fs.copyFileSync(srcPath, targetPath);
+    return;
+  }
+  try {
+    const srcJson = JSON.parse(fs.readFileSync(srcPath, 'utf8'));
+    const targetJson = JSON.parse(fs.readFileSync(targetPath, 'utf8'));
+    Object.assign(targetJson, srcJson);
+    fs.writeFileSync(targetPath, JSON.stringify(targetJson, null, 2), 'utf8');
+  } catch (err) {
+    // If target is invalid JSON, overwrite it
+    fs.copyFileSync(srcPath, targetPath);
+  }
+}
+
+function syncSkills(requestedSkills = null, isUpdateMode = false) {
   const srcSkillsDir = path.join(srcDir, 'skills');
-  const targetSkillsDir = path.join(targetDir, 'skills');
 
   // Ensure target directories exist
   fs.mkdirSync(targetDir, { recursive: true });
   fs.mkdirSync(targetSkillsDir, { recursive: true });
 
-  // Clean any top-level orphaned files/folders in targetDir except allowed ones
-  const allowedTopLevel = ['plugin.json', 'rules', 'skills', 'hooks.json'];
-  if (fs.existsSync(targetDir)) {
-    const topLevel = fs.readdirSync(targetDir);
-    for (const item of topLevel) {
-      if (!allowedTopLevel.includes(item)) {
-        fs.rmSync(path.join(targetDir, item), { recursive: true, force: true });
-      }
-    }
+  // Install GEMINI.md
+  const geminiSrc = path.join(srcDir, 'GEMINI.md');
+  const geminiTarget = path.join(targetDir, 'GEMINI.md');
+  if (fs.existsSync(geminiSrc)) {
+    fs.copyFileSync(geminiSrc, geminiTarget);
   }
 
-  // Copy/overwrite non-skills assets (plugin.json and rules)
-  fs.cpSync(path.join(srcDir, 'plugin.json'), path.join(targetDir, 'plugin.json'), { force: true });
-  fs.cpSync(path.join(srcDir, 'rules'), path.join(targetDir, 'rules'), { recursive: true, force: true });
-  if (fs.existsSync(path.join(srcDir, 'hooks.json'))) {
-    fs.cpSync(path.join(srcDir, 'hooks.json'), path.join(targetDir, 'hooks.json'), { force: true });
+  // Install hooks.json
+  const hooksSrc = path.join(srcDir, 'hooks.json');
+  const hooksTarget = path.join(targetDir, 'hooks.json');
+  if (fs.existsSync(hooksSrc)) {
+    mergeHooks(hooksSrc, hooksTarget);
   }
 
   const existingSkills = fs.existsSync(targetSkillsDir) ? fs.readdirSync(targetSkillsDir) : [];
@@ -285,7 +300,7 @@ function syncSkills(srcDir, targetDir, requestedSkills = null, isUpdateMode = fa
   }
 
   if (requestedSkills === null) {
-    console.log("✨ Rules installed. Run with --skills=group1,group2 to install specific skills.");
+    console.log("✨ Rules and hooks installed. Run with --skills=group1,group2 to install specific skills.");
     return;
   }
 
@@ -385,14 +400,8 @@ if (skillsArg) {
 if (command === 'install') {
   console.log(`🚀 Installing agy-skills to ${targetDir}...`);
   try {
-    if (!fs.existsSync(srcDir)) {
-      throw new Error(`Source directory 'src' does not exist at ${srcDir}`);
-    }
-
-    // Sync skills and metadata
-    syncSkills(srcDir, targetDir, requestedSkills);
-
-    console.log(`\n🎉 Success! Synchronized all core plugin content in ${targetDir}`);
+    syncSkills(requestedSkills);
+    console.log(`\n🎉 Success! Custom installation completed in ${targetDir}`);
   } catch (error) {
     console.error(`❌ Installation failed: ${error.message}`);
     process.exit(1);
@@ -400,12 +409,33 @@ if (command === 'install') {
 } else if (command === 'uninstall') {
   console.log(`🧹 Uninstalling agy-skills from ${targetDir}...`);
   try {
-    if (fs.existsSync(targetDir)) {
-      fs.rmSync(targetDir, { recursive: true, force: true });
-      console.log("✅ Success! Removed plugin folder from target directory.");
-    } else {
-      console.log(`⚠️ Plugin folder does not exist at ${targetDir}`);
+    const geminiTarget = path.join(targetDir, 'GEMINI.md');
+    if (fs.existsSync(geminiTarget)) {
+      fs.rmSync(geminiTarget, { force: true });
     }
+    // Remove individual keys from target hooks.json if it exists
+    const hooksSrc = path.join(srcDir, 'hooks.json');
+    const hooksTarget = path.join(targetDir, 'hooks.json');
+    if (fs.existsSync(hooksSrc) && fs.existsSync(hooksTarget)) {
+      try {
+        const srcJson = JSON.parse(fs.readFileSync(hooksSrc, 'utf8'));
+        const targetJson = JSON.parse(fs.readFileSync(hooksTarget, 'utf8'));
+        for (const key of Object.keys(srcJson)) {
+          delete targetJson[key];
+        }
+        if (Object.keys(targetJson).length === 0) {
+          fs.rmSync(hooksTarget, { force: true });
+        } else {
+          fs.writeFileSync(hooksTarget, JSON.stringify(targetJson, null, 2), 'utf8');
+        }
+      } catch (err) {
+        // ignore
+      }
+    }
+    if (fs.existsSync(targetSkillsDir)) {
+      fs.rmSync(targetSkillsDir, { recursive: true, force: true });
+    }
+    console.log("✅ Success! Custom installation removed.");
   } catch (error) {
     console.error(`❌ Uninstallation failed: ${error.message}`);
     process.exit(1);
@@ -413,26 +443,17 @@ if (command === 'install') {
 } else if (command === 'update') {
   console.log(`🚀 Updating existing agy-skills in ${targetDir}...`);
   try {
-    if (!fs.existsSync(srcDir)) {
-      throw new Error(`Source directory 'src' does not exist at ${srcDir}`);
-    }
-
-    // Sync skills in update mode
-    syncSkills(srcDir, targetDir, null, true);
-
-    console.log(`\n🎉 Success! Updated all existing plugin content in ${targetDir}`);
+    syncSkills(null, true);
+    console.log(`\n🎉 Success! Custom installation updated in ${targetDir}`);
   } catch (error) {
     console.error(`❌ Update failed: ${error.message}`);
     process.exit(1);
   }
 } else if (command === 'check') {
   try {
-    if (!fs.existsSync(srcDir)) {
-      throw new Error(`Source directory 'src' does not exist at ${srcDir}`);
-    }
-    checkUpdates(srcDir, targetDir);
+    checkUpdates();
   } catch (error) {
-    // silently fail check to not disrupt startup
+    // silently fail check
   }
 } else {
   console.log("Usage: bunx github:meyverick/agy-skills [install|update|uninstall|check]");
