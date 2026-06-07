@@ -38,11 +38,15 @@ To check if your installed skills, rules, or hooks are up to date against the re
 bunx github:meyverick/agy-skills check
 ```
 
-On Windows, the skills and rules are installed at:
-`%userprofile%/.gemini/config/plugins/agy-skills/`
+On Windows, the rules, hooks, and skills are installed under:
+- **Rules:** `%userprofile%\.gemini\GEMINI.md`
+- **Hooks:** `%userprofile%\.gemini\hooks.json` (keys merged)
+- **Skills:** `%userprofile%\.gemini\skills\`
 
-On Linux/macOS, the skills and rules are installed at:
-`~/.gemini/config/plugins/agy-skills/`
+On Linux/macOS, they are installed under:
+- **Rules:** `~/.gemini/GEMINI.md`
+- **Hooks:** `~/.gemini/hooks.json` (keys merged)
+- **Skills:** `~/.gemini/skills/`
 
 ---
 
