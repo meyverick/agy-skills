@@ -4,6 +4,9 @@ A collection of elite, modular, and validated AI agent skills and system rules d
 
 ## Installation
 
+> [!IMPORTANT]
+> **DISCLAIMER:** This project is not configured as an Antigravity plugin due to instability in the plugin loader. It performs a global custom installation, replacing your existing global `GEMINI.md` file and merging `hooks.json` keys. You will be prompted to confirm the installation (default: No).
+
 ### Rule Synchronization (Default)
 
 By default, executing the package synchronizes global system rules without installing skills:

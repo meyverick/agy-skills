@@ -399,6 +399,26 @@ if (skillsArg) {
 
 if (command === 'install') {
   console.log(`⚠️  [agy-skills] Notice: This project is not configured as an Antigravity plugin due to current instability in the plugin loader. It will perform a global custom installation, replacing your existing global GEMINI.md.`);
+  
+  const readline = await import('readline');
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+
+  const confirm = () => new Promise((resolve) => {
+    rl.question('Do you want to proceed with the installation? (y/N): ', (answer) => {
+      rl.close();
+      resolve(answer.trim().toLowerCase());
+    });
+  });
+
+  const answer = await confirm();
+  if (answer !== 'y' && answer !== 'yes') {
+    console.log('❌ Installation aborted by user.');
+    process.exit(0);
+  }
+
   console.log(`🚀 Installing agy-skills to ${targetDir}...`);
   try {
     syncSkills(requestedSkills);
