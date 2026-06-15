@@ -55,7 +55,7 @@ On Linux/macOS, they are installed under:
 
 ## Included Agent Skills
 
-This plugin provides 41 highly cohesive, validated skills complying with the Agent Skills specification, grouped by domain:
+This plugin provides 42 highly cohesive, validated skills complying with the Agent Skills specification, grouped by domain:
 
 ### 1. Core Standards & Orchestration (`--skills=core`)
 
@@ -67,6 +67,7 @@ This plugin provides 41 highly cohesive, validated skills complying with the Age
 - **`workspace-refactoring`**: Conducts automated structural audits and refactoring across the workspace.
 - **`secure-gitignore-management`**: Manages and audits `.gitignore` files using a secure default-deny pattern.
 - **`pnpm-workspace-management`**: Manages monorepo workspaces, strict dependency resolution, and optimized lockfiles using pnpm.
+- **`project-documentation-mastery`**: Orchestrates state-of-the-art `README.md` documentation and structured GitHub Wikis.
 
 ### 2. Systems, Backend & Deployment (`--skills=backend`)
 
@@ -124,6 +125,8 @@ These skills are fetched dynamically from remote repositories during synchroniza
 - **`modern-web-guidance`**: Search tool and best practices reference for modern Web API developments. Cloned from [GoogleChrome/modern-web-guidance](https://github.com/GoogleChrome/modern-web-guidance).
 - **`chrome-extensions`**: Guidelines and API specifications for Manifest V3 extension engineering. Cloned from [GoogleChrome/modern-web-guidance](https://github.com/GoogleChrome/modern-web-guidance).
 - **`find-skills`**: Discoverability helper utilities to search and install external agent skills. Cloned from [vercel-labs/skills](https://github.com/vercel-labs/skills).
+- **`svelte-code-writer`**: Official Svelte code-writing conventions and snippets. Cloned from [sveltejs/ai-tools](https://github.com/sveltejs/ai-tools).
+- **`svelte-core-bestpractices`**: Core Svelte 5 and SvelteKit best practices. Cloned from [sveltejs/ai-tools](https://github.com/sveltejs/ai-tools).
 
 ---
 

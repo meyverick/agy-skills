@@ -23,7 +23,8 @@ const SKILL_GROUPS = {
     'pnpm-workspace-management',
     'bug-resolution-reporting',
     'markdown-formatting-mastery',
-    'ai-referencing-optimization'
+    'ai-referencing-optimization',
+    'project-documentation-mastery'
   ],
   web: [
     'svelte-ui-engineering',
@@ -71,7 +72,9 @@ const SKILL_GROUPS = {
   extra: [
     'modern-web-guidance',
     'chrome-extensions',
-    'find-skills'
+    'find-skills',
+    'svelte-code-writer',
+    'svelte-core-bestpractices'
   ]
 };
 
@@ -114,6 +117,7 @@ function fetchExternalSkills(skillsToFetch, targetSkillsDir) {
   try {
     const fetchMwg = skillsToFetch.includes('modern-web-guidance') || skillsToFetch.includes('chrome-extensions');
     const fetchFindSkills = skillsToFetch.includes('find-skills');
+    const fetchSvelte = skillsToFetch.includes('svelte-code-writer') || skillsToFetch.includes('svelte-core-bestpractices');
 
     if (fetchMwg) {
       const mwgTemp = path.join(tempParentDir, 'mwg');
@@ -132,6 +136,18 @@ function fetchExternalSkills(skillsToFetch, targetSkillsDir) {
       console.log('📦 Fetching latest find-skills skill from vercel-labs/skills...');
       execSync(`git clone --depth 1 https://github.com/vercel-labs/skills.git "${vercelTemp}"`, { stdio: 'ignore' });
       fs.cpSync(path.join(vercelTemp, 'skills', 'find-skills'), path.join(targetSkillsDir, 'find-skills'), { recursive: true, force: true });
+    }
+
+    if (fetchSvelte) {
+      const svelteTemp = path.join(tempParentDir, 'svelte');
+      console.log('📦 Fetching latest svelte skills from sveltejs/ai-tools...');
+      execSync(`git clone --depth 1 https://github.com/sveltejs/ai-tools.git "${svelteTemp}"`, { stdio: 'ignore' });
+      if (skillsToFetch.includes('svelte-code-writer')) {
+        fs.cpSync(path.join(svelteTemp, 'tools', 'skills', 'svelte-code-writer'), path.join(targetSkillsDir, 'svelte-code-writer'), { recursive: true, force: true });
+      }
+      if (skillsToFetch.includes('svelte-core-bestpractices')) {
+        fs.cpSync(path.join(svelteTemp, 'tools', 'skills', 'svelte-core-bestpractices'), path.join(targetSkillsDir, 'svelte-core-bestpractices'), { recursive: true, force: true });
+      }
     }
   } catch (err) {
     console.warn(`⚠️ Warning: Failed to fetch external skills dynamically (${err.message}).`);
@@ -174,7 +190,7 @@ function checkUpdates() {
 
   const srcSkillsDir = path.join(srcDir, 'skills');
   const existingSkills = fs.existsSync(targetSkillsDir) ? fs.readdirSync(targetSkillsDir) : [];
-  const externalSkills = ['modern-web-guidance', 'chrome-extensions', 'find-skills'];
+  const externalSkills = ['modern-web-guidance', 'chrome-extensions', 'find-skills', 'svelte-code-writer', 'svelte-core-bestpractices'];
   const externalToCheck = [];
 
   for (const skill of existingSkills) {
@@ -195,6 +211,7 @@ function checkUpdates() {
     try {
       const fetchMwg = externalToCheck.includes('modern-web-guidance') || externalToCheck.includes('chrome-extensions');
       const fetchFindSkills = externalToCheck.includes('find-skills');
+      const fetchSvelte = externalToCheck.includes('svelte-code-writer') || externalToCheck.includes('svelte-core-bestpractices');
 
       if (fetchMwg) {
         const mwgTemp = path.join(tempParentDir, 'mwg');
@@ -212,6 +229,17 @@ function checkUpdates() {
         execSync(`git clone --depth 1 https://github.com/vercel-labs/skills.git "${vercelTemp}"`, { stdio: 'ignore' });
         if (areDirsDifferent(path.join(vercelTemp, 'skills', 'find-skills'), path.join(targetSkillsDir, 'find-skills'))) {
           updatesAvailable.push('skill: find-skills');
+        }
+      }
+
+      if (fetchSvelte) {
+        const svelteTemp = path.join(tempParentDir, 'svelte');
+        execSync(`git clone --depth 1 https://github.com/sveltejs/ai-tools.git "${svelteTemp}"`, { stdio: 'ignore' });
+        if (externalToCheck.includes('svelte-code-writer') && areDirsDifferent(path.join(svelteTemp, 'tools', 'skills', 'svelte-code-writer'), path.join(targetSkillsDir, 'svelte-code-writer'))) {
+          updatesAvailable.push('skill: svelte-code-writer');
+        }
+        if (externalToCheck.includes('svelte-core-bestpractices') && areDirsDifferent(path.join(svelteTemp, 'tools', 'skills', 'svelte-core-bestpractices'), path.join(targetSkillsDir, 'svelte-core-bestpractices'))) {
+          updatesAvailable.push('skill: svelte-core-bestpractices');
         }
       }
     } catch (err) {

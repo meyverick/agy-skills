@@ -1,51 +1,48 @@
 ---
 name: mraid-ad-integration
-description: Integrates the MRAID (Mobile Rich Media Ad Interface Definitions) API into HTML5 playable ads. Handles viewability, orientation changes, and the mandatory close/CTA mechanisms.
+description: Integrates the MRAID API into HTML5 playable ads. Use when handling ad viewability, orientation changes, and mandatory store CTA hooks.
 ---
 
 # MRAID Ad Integration
 
-This skill safely integrates the MRAID API into playable ads to communicate with the host mobile application.
+This skill enforces the strict integration of the MRAID (Mobile Rich Media Ad Interface Definitions) API. MRAID is mandatory for in-app HTML5 playable ads.
 
-## Core Rules
-1. **Defensive Programming**: Always check if `mraid` is defined before calling it (`typeof mraid !== 'undefined'`).
-2. **State Management**: Listen for the `mraid.addEventListener('ready', ...)` and `mraid.addEventListener('viewableChange', ...)` events to pause/resume the game appropriately.
-3. **Call-To-Action (CTA)**: Use `mraid.open(url)` for the final outbound click. 
-4. **Cross-Platform Readiness**: Ensure the integration doesn't throw errors when tested in standard desktop browsers (mock MRAID if needed).
+## When to Use
 
-## Reference Example
+- **Use when** building playable ads requiring MRAID wrappers.
+- **Use when** handling the final Call To Action (CTA) click out to the App Store.
+- **NOT for** standard desktop browser web games.
 
-```javascript
-function initMraid() {
-  if (typeof mraid === 'undefined') {
-    console.warn("MRAID not found, running in web mode.");
-    startGame();
-    return;
-  }
+## Core Process
 
-  if (mraid.getState() === 'loading') {
-    mraid.addEventListener('ready', onMraidReady);
-  } else {
-    onMraidReady();
-  }
-}
+### Phase 1: MRAID Initialization
+- Check if MRAID exists: `typeof mraid !== 'undefined'`.
+- Do not start the heavy game loop (rendering, audio) until `mraid.getState() === 'default'` AND `mraid.isViewable() === true`.
+- Listen for the `ready` and `viewableChange` events.
 
-function onMraidReady() {
-  mraid.addEventListener('viewableChange', function(viewable) {
-    if (viewable) {
-      resumeGame();
-    } else {
-      pauseGame();
-    }
-  });
-  startGame();
-}
+### Phase 2: The Call to Action (CTA)
+- Playable ads exist solely to drive clicks to the App Store.
+- The final user click must trigger `mraid.open(storeUrl)`. Do not use `window.open`.
 
-function triggerCTA(storeUrl) {
-  if (typeof mraid !== 'undefined') {
-    mraid.open(storeUrl);
-  } else {
-    window.open(storeUrl, '_blank');
-  }
-}
-```
+### Phase 3: Resize and Orientation
+- Listen to `mraid.addEventListener("sizeChange", ...)`.
+- Ensure the Canvas resizes seamlessly based on the MRAID container dimensions, not `window.innerWidth`.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|---|---|
+| "I'll just start the game immediately on script load." | The ad may load off-screen in the background. Starting audio or heavy rendering before `mraid.isViewable()` violates ad network policies and drains battery. |
+| "I'll use `<a href='...'>` for the install button." | In-app environments hijack standard links poorly. You must bind click events directly to `mraid.open(url)`. |
+
+## Red Flags
+
+- Missing `mraid.isViewable()` checks before initiating `requestAnimationFrame` loops.
+- Audio playing unconditionally before the user interacts or the ad is fully visible.
+
+## Verification
+
+Before finalizing the MRAID integration:
+- [ ] The game loop pauses and resumes based on `mraid.viewableChange` events.
+- [ ] Store redirects are routed explicitly through `mraid.open()`.
+- [ ] `window.mraid` null checks are wrapped around all MRAID logic to prevent testing crashes in desktop browsers.

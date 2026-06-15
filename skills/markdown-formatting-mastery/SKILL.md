@@ -1,33 +1,54 @@
 ---
 name: markdown-formatting-mastery
-description: Enforces strict, standardized Markdown syntax generation and formatting. Implements comprehensive rules from standard Markdown guides, overriding defaults to enforce hyphen-based unordered lists and modern extended syntax.
+description: Enforces strict, standardized Markdown formatting. Use when writing documentation, generating reports, formatting code blocks, or creating wikis.
 ---
 
 # Markdown Formatting Mastery
 
-## 1. Skill Definition
-This skill orchestrates the generation, validation, and refactoring of Markdown documents. It enforces standardization, readability, and compatibility across processors by strictly adhering to the definitive Markdown Guide specifications.
+This skill strictly enforces standard GitHub Flavored Markdown (GFM) formatting rules. It guarantees consistency across all generated artifacts, wikis, and system documentation.
 
-## 2. Core Formatting Directives
+## When to Use
 
-### 2.1. List Strictures
--   **Mandatory Hyphenation:** Utilize `- ` exclusively for unordered lists. Asterisks (`* `) and plus signs (`+ `) are strictly prohibited to prevent syntax ambiguity with emphasis.
--   **Nested Alignment:** Indent nested lists by precisely 4 spaces (or 1 tab) to ensure uniform parsing across engines.
--   **Ordered Lists:** Utilize standard `1. `, `2. ` formatting. Maintain numerical sequence for source readability.
+- **Use when** authoring or modifying `.md` files.
+- **Use when** generating reports, readmes, or artifact summaries.
+- **Use when** structuring complex tables or technical data.
 
-### 2.2. Block Elements
--   **Headings:** Utilize ATX-style headings exclusively (`#`, `##`). A single space must follow the hashes. Setext-style (`===`) is prohibited.
--   **Paragraphs & Breaks:** Separate paragraphs via single blank lines. Utilize the `<br>` HTML tag for hard line breaks to ensure compatibility. Trailing backslashes are prohibited.
--   **Code Blocks:** Enforce fenced code blocks (\`\`\`) with explicit language identifiers. 4-space indented code blocks are prohibited.
--   **Blockquotes:** Utilize `> `. Blank lines must precede and succeed blockquotes.
+## Core Process
 
-### 2.3. Inline Elements
--   **Emphasis:** Utilize asterisks (`**bold**`, `*italic*`) for intra-word compatibility. Underscores (`_`) are prohibited for emphasis.
--   **Links:** Utilize standard `[text](url)` syntax. URL-encode parentheses inside links (e.g., `%28`, `%29`).
--   **Images:** Utilize `![alt text](url "Title")`. Explicit `alt text` is mandatory.
+### Phase 1: Document Structure & Hierarchy
+- Maintain a strict heading hierarchy. Never skip heading levels (e.g., don't jump from `H1` to `H3`).
+- Only use a single `# H1` at the very top of the document.
 
-### 2.4. Extended Syntax (GFM)
--   **Tables:** Align columns using pipes (`|`) and hyphens (`-`). Pad cells with spaces for source readability.
--   **Task Lists:** Utilize `- [ ]` and `- [x]` syntax.
--   **Strikethrough:** Utilize double tildes (`~~`).
+### Phase 2: Lists & Syntax
+- Use the hyphen `-` for unordered lists. Do not use `*`.
+- Ensure standard spacing: One blank line above and below all lists, code blocks, and blockquotes.
 
+### Phase 3: Code Formatting
+- Always specify the language identifier for fenced code blocks (e.g., ` ```typescript ` or ` ```bash `).
+- Do not use `>` blockquotes for code. Use fenced backticks.
+- Link to specific files using valid markdown URI schema `[name](file:///path)`.
+
+### Phase 4: Tabular Data
+- Use standard GFM tables to present multi-dimensional data.
+- Ensure columns are aligned logically to improve raw-text readability.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|---|---|
+| "I'll just paste this code as raw text." | Code without fenced syntax highlighting is difficult for humans to read. Language identifiers are mandatory. |
+| "I'll use `*` for lists because it's easier." | `*` can conflict with bolding syntax or cause inconsistent rendering in some parsers. Always standardize on `-`. |
+
+## Red Flags
+
+- Fenced code blocks lacking language tags (e.g., just ` ``` ` instead of ` ```json `).
+- Skipped heading levels or multiple `H1` tags in a single document.
+- Dense walls of text instead of chunked, easily scannable sections.
+
+## Verification
+
+Before saving the markdown document, verify:
+- [ ] The document strictly adheres to heading hierarchy.
+- [ ] All lists use hyphens (`-`).
+- [ ] Every code block possesses a correct language identifier.
+- [ ] Links and URIs are correctly formatted without breaking backticks.

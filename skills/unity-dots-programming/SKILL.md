@@ -1,43 +1,46 @@
 ---
 name: unity-dots-programming
-description: Engineers high-performance Data-Oriented Design (DOD) architectures using Unity's Entity Component System (ECS).
+description: Engineers high-performance DOD architectures using Unity ECS. Use when architecting systems, structuring components, or migrating away from MonoBehaviours.
 ---
 
-# Unity DOTS Programming (ECS)
+# Unity DOTS Programming
 
-This skill engineers gameplay systems and core architecture using Unity's Entity Component System (ECS). It enforces Data-Oriented Design to maximize CPU cache locality.
+This skill governs the Data-Oriented Design (DOD) architecture using Unity's Entity Component System (ECS). It explicitly forbids Object-Oriented paradigms (like `MonoBehaviour`) in performance-critical code to maximize cache locality.
 
-## Core Rules
-1. **Separation of Concerns (SoC)**: Strictly separate data (`IComponentData`) from logic (`ISystem`). Never place logic inside a component struct.
-2. **Defensive Programming**: Use `EntityCommandBuffer` for any structural changes (creating/destroying entities, adding/removing components) during a system's `OnUpdate` to prevent race conditions and collection modification exceptions.
-3. **No Managed Types**: Ensure `IComponentData` structs only contain unmanaged value types (blittable types). No classes or standard strings.
-4. **Query Optimization**: Cache entity queries (`EntityQuery`) rather than creating them dynamically every frame.
+## When to Use
 
-## Reference Example
+- **Use when** simulating massive numbers of entities (e.g., thousands of units).
+- **Use when** defining `IComponentData` structs or `ISystem` logic.
+- **NOT for** standard UI logic or simple 2D prototypes.
 
-```csharp
-using Unity.Entities;
-using Unity.Transforms;
-using Unity.Mathematics;
+## Core Process
 
-// 1. The Data (Component)
-public struct SpeedComponent : IComponentData
-{
-    public float Value;
-}
+### Phase 1: Pure Data Components
+- Use `IComponentData` exclusively for state.
+- Components must be strictly unmanaged (blittable structs). Do not store classes, arrays, or strings in ECS components.
 
-// 2. The Logic (System)
-public partial struct MovementSystem : ISystem
-{
-    public void OnUpdate(ref SystemState state)
-    {
-        float deltaTime = SystemAPI.Time.DeltaTime;
+### Phase 2: System Isolation
+- Use `ISystem` (unmanaged systems) instead of `SystemBase` (managed systems) whenever possible to allow Burst compilation.
+- Queries (`SystemAPI.Query`) must be extremely specific. Filter out entities using `WithNone` or `WithAll` to minimize iteration times.
 
-        // Uses Source Generators for high-performance iteration
-        foreach (var (transform, speed) in SystemAPI.Query<RefRW<LocalTransform>, RefRO<SpeedComponent>>())
-        {
-            transform.ValueRW = transform.ValueRO.Translate(new float3(0, 0, speed.ValueRO.Value * deltaTime));
-        }
-    }
-}
-```
+### Phase 3: The MonoBehaviour Bridge
+- If interaction with GameObjects is required (e.g., legacy UI), utilize `IComponentData` as a bridge, reading it from a managed system. Do not link GameObjects directly into pure ECS structural data.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|---|---|
+| "I'll just add a reference to the `Transform` in my component data." | Managed references destroy cache locality and prevent Burst compilation. Use `LocalTransform` and sync them if absolutely necessary. |
+| "I'll use `SystemBase` because it's easier to write." | `SystemBase` incurs garbage collection overhead. `ISystem` guarantees strict unmanaged performance. |
+
+## Red Flags
+
+- Components defined as `class` instead of `struct`.
+- Using `GameObject.Find` inside any ECS system update loop.
+
+## Verification
+
+Before completing the ECS architecture, verify:
+- [ ] All components are unmanaged blittable `struct`s.
+- [ ] Systems inherit from `ISystem` and are decorated with `[BurstCompile]`.
+- [ ] `SystemAPI.Query` explicitly limits iteration scopes.

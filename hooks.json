@@ -1,4 +1,20 @@
 {
+  "workspace-git-init": {
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "if [ ! -d \"$(jq -r '.workspacePaths[0]' <&0)/.git\" ]; then echo '{\"injectSteps\": [{\"toolCall\": {\"name\": \"run_command\", \"args\": {\"CommandLine\": \"git init\", \"Cwd\": \"'\"$(jq -r '.workspacePaths[0]' <&0)\"'\"}}}]}'; else echo '{\"injectSteps\": []}'; fi"
+      }
+    ]
+  },
+  "workspace-memory-init": {
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "WORKSPACE=$(jq -r '.workspacePaths[0]' <&0); MEM_DIR=\"$WORKSPACE/.agents/memory\"; if [ ! -d \"$MEM_DIR\" ]; then mkdir -p \"$MEM_DIR\" && echo '{\"injectSteps\": [{\"toolCall\": {\"name\": \"write_to_file\", \"args\": {\"TargetFile\": \"'\"$MEM_DIR/identity.md\"'\", \"Overwrite\": true, \"CodeContent\": \"[identity] [init] [active]\\n- Core purpose, scope.\", \"Description\": \"Initialize core identity memory.\"}}}]}' ; else echo '{\"injectSteps\": []}'; fi"
+      }
+    ]
+  },
   "update-check": {
     "PreInvocation": [
       {

@@ -1,54 +1,49 @@
 ---
 name: pinus-server-development
-description: Architects scalable, distributed multi-process game servers for MMORPGs and high-concurrency games using the Pinus (Pomelo) framework in TypeScript.
+description: Architects multi-process Pomelo/Pinus servers. Use when building highly concurrent MMORPG backends, RPC boundaries, or real-time distributed state.
 ---
 
 # Pinus Server Development
 
-This skill engineers large-scale, distributed server architectures. It utilizes the Pinus framework (TypeScript modernization of Pomelo) to handle RPCs, routing, and horizontal scaling.
+This skill governs the architecture of highly scalable, distributed Node.js/TypeScript game servers using the Pinus (formerly Pomelo) framework. It enforces strict separation of concerns between state-holding backend servers and purely routing frontend connectors.
 
-## Core Rules
-1. **Multi-Process Architecture (SoC)**: Strictly divide responsibilities among specific server types (e.g., `connector` for maintaining WebSocket connections, `chat` for messaging, `area` for gameplay logic).
-2. **Asynchronous Resilience**: Pinus utilizes Promises/Async-Await. Handle all RPC (Remote Procedure Call) failures using `try/catch` and exponential backoffs or circuit breakers.
-3. **Stateless Logic**: Handlers must remain as stateless as possible to allow horizontal scaling. Use Redis or external databases to maintain global state.
+## When to Use
 
-## Reference Example
+- **Use when** developing real-time MMORPG server topologies.
+- **Use when** defining RPC (Remote Procedure Call) boundaries between node clusters.
+- **Use when** scaling WebSocket connections across multiple machines.
+- **NOT for** standard stateless REST API backends.
 
-```typescript
-import { Application, FrontendSession } from 'pinus';
+## Core Process
 
-// Handler for the 'connector' server
-export default function (app: Application) {
-    return new EntryHandler(app);
-}
+### Phase 1: The Connector / Backend Boundary
+- **Connectors**: Frontend connector servers MUST be entirely stateless. Their only responsibility is maintaining the WebSocket session and routing packets to the correct backend node.
+- **Backend Servers**: All game logic and state mutation must occur here.
 
-export class EntryHandler {
-    constructor(private app: Application) {}
+### Phase 2: State Isolation
+- State must be strictly partitioned by server type (e.g., `chat`, `area`, `combat`).
+- A player's session state on the connector must only hold routing metadata (e.g., `serverId`), never game-critical mutable data like `health` or `inventory`.
 
-    // Async handler invoked by clients
-    async enter(msg: { username: string }, session: FrontendSession) {
-        if (!msg.username) {
-            return { code: 500, error: 'Username required' };
-        }
+### Phase 3: RPC Efficiency
+- Avoid "chatty" RPCs between backend servers. Group state updates or use pub/sub mechanisms for broadcast data.
+- Ensure all RPC boundaries utilize strict TypeScript interfaces to prevent runtime crashes from misaligned data structures.
 
-        try {
-            // Bind session to a user ID securely
-            await session.abind(msg.username);
-            session.on('closed', this.onUserLeave.bind(this, this.app));
+## Common Rationalizations
 
-            // Perform RPC call to 'chat' server to register user
-            await this.app.rpc.chat.chatRemote.add(session, msg.username, session.frontendId);
+| Rationalization | Reality |
+|---|---|
+| "I'll just put the combat logic on the connector to save an RPC hop." | Connectors must remain stateless. Putting logic on connectors destroys horizontal scalability and locks player state to a single machine. |
+| "I'll store the player's full inventory in the session object." | Session objects are broadcast across the cluster. Heavy state causes massive memory leaks and network congestion. |
 
-            return { code: 200, msg: `Welcome ${msg.username}` };
-        } catch (e) {
-            console.error('Enter failed:', e);
-            return { code: 500, error: 'Internal Server Error' };
-        }
-    }
+## Red Flags
 
-    private onUserLeave(app: Application, session: FrontendSession) {
-        if (!session || !session.uid) return;
-        // Broadcast leave event
-    }
-}
-```
+- State mutation logic existing within `servers/connector/handler`.
+- Heavy, frequent blocking operations (like synchronous DB queries) inside the main Pinus event loop.
+- Lack of strict typings on the `app.rpc` definitions.
+
+## Verification
+
+Before finalizing the Pinus server code, verify:
+- [ ] Connectors are strictly stateless routing layers.
+- [ ] Backend servers do not share mutable state directly.
+- [ ] RPC schemas are explicitly typed via TypeScript interfaces.

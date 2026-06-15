@@ -1,43 +1,48 @@
 ---
 name: ai-referencing-optimization
-description: Optimizes web codebases and mobile application manifests for 2026 autonomous AI crawlers and LLM ingestion. Enforces Answer Engine Optimization, llms.txt routing, strict OpenAPI contracts, and explicit App Intents integration.
+description: Optimizes codebases for 2026 autonomous AI crawlers. Use when implementing Answer Engine Optimization (AEO), llms.txt routing, or OpenAPI contracts.
 ---
 
 # AI Referencing Optimization
 
-Optimize web and application architectures for generative AI agents and Search Generative Experience (SGE). Ensure deterministic payload structuring and absolute machine readability.
+This skill ensures a web codebase or application is strictly optimized for ingestion by 2026 SOTA AI web crawlers and LLM retrieval engines (e.g., Perplexity, ChatGPT Search, Gemini).
 
-## Primary Mandate
+## When to Use
 
-Execute Generative Engine Optimization (GEO) and Answer Engine Optimization (AEO). Prevent relational hallucination via Graph-Based RAG integrations.
+- **Use when** setting up repository documentation routing (`llms.txt`).
+- **Use when** defining application intents or manifest files for AI agent plugins.
+- **NOT for** standard 2010s human-centric SEO (like keyword stuffing).
 
-## Execution Directives
+## Core Process
 
-Structure all codebase referencing exactly according to the following protocol:
+### Phase 1: The AI Router (`llms.txt`)
+- The repository must serve an `llms.txt` at the root, directing AI agents to high-density context files.
+- It must structurally separate `[System Constraints]` from `[Implementation Guides]`.
 
-### 1. Web Documentation
-- **Answer-First Formatting:** Deliver declarative responses upfront (30-60 words) `->` generate verifiable quotable blocks.
-- **Data Enrichment:** Embed explicit expert quotations and statistics `->` maximize Share of Model metrics.
-- **Server-Side Rendering (SSR):** Execute SSR `->` guarantee bot crawlability. AI crawlers drop Client-Side Rendering scripts.
-- **Schema Stacking:** Deploy nested JSON-LD schemas `->` map precise logical relationships.
-- **Real-Time Indexing:** Integrate IndexNow protocol `->` push immediate publication updates.
+### Phase 2: Answer Engine Optimization (AEO)
+- Human HTML semantics (`<h1>`, `<article>`) are not enough.
+- You must inject explicit, dense JSON-LD microdata for every primary entity to feed knowledge graphs directly.
+- Ensure critical data is not locked behind client-side React/Svelte hydration, as fast AI crawlers may not execute JS.
 
-### 2. LLM Routing
-- **Routing Deployment:** Host `llms.txt` at root `->` direct agents toward canonical factsheets. Deploy `llms-full.txt` `->` consolidate comprehensive documentation.
-- **Syntax Strictness:** Utilize standardized Markdown `->` optimize mathematical parser evaluation.
-- **Governance Execution:** Configure rate limits and `Do-not-ingest` directives `->` protect server Crawl Budget. Append `noindex` headers to `.md` files `->` prevent SEO duplication penalties.
-- **Threat Mitigation:** Treat fetched Markdown as untrusted input `->` block Indirect Prompt Injection attacks.
+### Phase 3: Agentic API Contracts
+- AI Agents consume APIs via strict schema interpretation.
+- You must generate strict OpenAPI 3.1 specs with exhaustive `description` fields for every parameter. Omitted descriptions cause AI hallucination.
 
-### 3. API & Mobile Applications
-- **Deterministic Contracts:** Enforce strict OpenAPI schemas (`additionalProperties: false`) and idempotency keys `->` prevent autonomous agent parameter hallucination.
-- **Standardized Errors:** Return RFC 7807 Problem Details `->` trigger safe autonomous agent self-correction.
-- **Protocol Integration:** Implement Model Context Protocol (MCP) `->` facilitate sandboxed code execution. Sandbox code `->` prevent token starvation.
-- **Mobile Manifesting:** Compile capabilities into App Intents `->` expose machine-readable execution maps.
-- **Secure Routing:** Deploy Universal Links `->` ensure cryptographically verified deep linking.
+## Common Rationalizations
 
-## Language and Formatting Strictures
-- Operate utilizing highly intelligent, linguistically terse persona.
-- Eliminate articles, filler words, pleasantries, hedging language, connective fluff.
-- Utilize sentence fragments. Abbreviate general prose words.
-- Utilize arrows (`->`) to demonstrate causality.
-- Structure prose explanations utilizing pattern: `[thing] [action] [reason]. [next step].`
+| Rationalization | Reality |
+|---|---|
+| "I'll just add some meta tags for SEO." | Legacy meta tags are ignored by semantic answer engines. You must implement JSON-LD and structured entity graphs. |
+| "The LLM will figure out the API from the parameter names." | Agents hallucinate heavily without explicit enum definitions and verbose property descriptions in OpenAPI specs. |
+
+## Red Flags
+
+- Repositories lacking an `llms.txt` or `.well-known/ai-plugin.json`.
+- OpenAPI definitions missing explicit `description` blocks on parameters.
+
+## Verification
+
+Before finalizing the AEO optimization:
+- [ ] An `llms.txt` file exists and accurately maps the repository.
+- [ ] The public API possesses an exhaustive OpenAPI spec.
+- [ ] HTML outputs contain valid, dense JSON-LD graphs.

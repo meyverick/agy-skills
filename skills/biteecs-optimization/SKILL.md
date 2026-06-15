@@ -1,43 +1,48 @@
 ---
 name: biteecs-optimization
-description: Engineers ultra-high-performance data-oriented ECS architectures in JavaScript/TypeScript using the minimal bitECS library.
+description: Engineers high-performance ECS architectures using bitECS in JS/TS. Use when migrating away from OOP to maximize data locality in HTML5 games.
 ---
 
 # bitECS Optimization
 
-This skill focuses on utilizing bitECS for memory-efficient, cache-friendly game simulations running in browsers, suitable for playable ads, Phaser, or PixiJS.
+This skill implements pure Data-Oriented Design (DOD) in JavaScript/TypeScript using the lightweight `bitECS` library. It enforces the usage of typed arrays (Structure of Arrays) to maximize CPU cache locality and prevent Garbage Collection (GC) pauses.
 
-## Core Rules
-1. **Strict Data-Oriented Design**: Components must only consist of pure numeric data stored in contiguous typed arrays (e.g., `Float32Array`). Do not store object references or strings in components.
-2. **KISS & SoC**: Systems iterate strictly over components via bitECS queries. No rendering code belongs inside systems; defer rendering to a phase after state calculation.
-3. **Memory Reusability**: Preallocate maximum entity limits and component buffer sizes during initialization to eliminate Garbage Collection (GC) pauses during runtime.
+## When to Use
 
-## Reference Example
+- **Use when** architecting HTML5 game loops handling thousands of entities.
+- **Use when** migrating legacy Object-Oriented JS game code.
+- **NOT for** standard DOM manipulation or generic React state.
 
-```typescript
-import { createWorld, addEntity, addComponent, defineComponent, defineQuery, Types } from 'biteecs';
+## Core Process
 
-// 1. Define Component Schema (Typed Arrays)
-export const Position = defineComponent({ x: Types.f32, y: Types.f32 });
-export const Velocity = defineComponent({ x: Types.f32, y: Types.f32 });
+### Phase 1: Typed Component Definition
+bitECS components are not objects. They are typed arrays (SoA).
+- Define components strictly using `defineComponent({ x: Types.f32, y: Types.f32 })`.
+- Never store strings or JS objects in bitECS components.
 
-const movementQuery = defineQuery([Position, Velocity]);
+### Phase 2: System Execution
+- Systems must be pure functions that query entities using `defineQuery`.
+- Iterate through the query array explicitly using a `for` loop. Do not use `.forEach()` or `.map()` as they introduce function call overhead in the hot loop.
 
-// 2. Define System
-export const movementSystem = (world, delta) => {
-    const ents = movementQuery(world);
-    for (let i = 0; i < ents.length; i++) {
-        const eid = ents[i];
-        Position.x[eid] += Velocity.x[eid] * delta;
-        Position.y[eid] += Velocity.y[eid] * delta;
-    }
-    return world;
-};
+### Phase 3: GC Elimination
+- Pre-allocate all entity pools globally.
+- Do not use `new` or create object literals `{}` inside system update loops.
 
-// 3. Usage
-const world = createWorld();
-const eid = addEntity(world);
-addComponent(world, Position, eid);
-addComponent(world, Velocity, eid);
-Velocity.x[eid] = 10;
-```
+## Common Rationalizations
+
+| Rationalization | Reality |
+|---|---|
+| "I'll just add a string 'name' to this bitECS component." | bitECS relies on SharedArrayBuffer and TypedArrays. You cannot store JS strings. Use an external map indexed by Entity ID if absolutely necessary. |
+| "I'll use `.forEach` to iterate the query because it's cleaner." | `.forEach` inside a hot game loop (e.g., 10,000 entities at 60fps) kills performance. Standard `for (let i = 0; i < ents.length; i++)` is mandatory. |
+
+## Red Flags
+
+- Defining components with JS Objects or Arrays instead of `bitECS.Types`.
+- Instantiating objects (`new Vector3()`) inside a system loop.
+
+## Verification
+
+Before concluding the bitECS architecture, verify:
+- [ ] All components exclusively use typed arrays (`Types.f32`, `Types.ui8`).
+- [ ] Queries are iterated using highly performant `for` loops.
+- [ ] Zero object allocations occur inside the system's `return` function.

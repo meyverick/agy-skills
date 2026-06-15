@@ -1,43 +1,46 @@
 ---
 name: fairygui-integration
-description: Integrates the FairyGUI UI framework into game engines (Unity, Cocos) to decouple visual layout creation from gameplay logic and minimize UI payloads.
+description: Integrates the FairyGUI UI framework into game engines. Use when decoupling visual layout creation from gameplay logic to minimize UI payloads.
 ---
 
 # FairyGUI Integration
 
-This skill focuses on integrating FairyGUI binary asset packages into a project and handling UI logic efficiently.
+This skill enforces strict MVC (Model-View-Controller) decoupling when using FairyGUI in engines like Unity or Cocos. It mandates that UI layouts remain exclusively in the FairyGUI Editor, with code acting only as a binding layer.
 
-## Core Rules
-1. **Decoupling (SoC)**: All layout, anchors, tween animations, and nested structures are designed inside the FairyGUI Editor. Code must only be used to bind data, set text, and add event listeners.
-2. **Performance (KISS)**: Use FairyGUI's Virtual Lists for scrolling menus with hundreds of items to recycle nodes and drastically reduce draw calls and memory overhead.
-3. **Cross-Platform Loaders**: Rely on the engine-specific FairyGUI SDK (e.g., `FairyGUI.UIPackage.AddPackage` in Unity or Cocos) to load the UI packages correctly from Asset Bundles or Resources.
+## When to Use
 
-## Reference Example
+- **Use when** loading and binding `.fui` packages.
+- **Use when** hooking up button listeners or dynamic text to UI elements.
+- **NOT for** animating game sprites or handling physics.
 
-```typescript
-// Example using FairyGUI in Cocos Creator or LayaAir
-import * as fgui from "fairygui";
+## Core Process
 
-export class MainMenuUI {
-    private view: fgui.GComponent;
+### Phase 1: Pure Binding
+- Fetch UI elements strictly via their FairyGUI export names (`view.GetChild("btn_start")`).
+- Never attempt to manually alter X/Y coordinates, colors, or anchors in code unless absolutely required for dynamic procedural generation.
 
-    constructor() {
-        // Load the generated package
-        fgui.UIPackage.addPackage("UI/MainMenu");
-        
-        // Instantiate the window/component
-        this.view = fgui.UIPackage.createObject("MainMenu", "MainUI").asCom;
-        fgui.GRoot.inst.addChild(this.view);
+### Phase 2: Event Delegation
+- Bind clicks using FairyGUI's event system (`btn.onClick.Add(...)`).
+- Keep the callback logic out of the View class. Route events back to the main Game Controller.
 
-        // Bind logic
-        const startBtn = this.view.getChild("btn_start").asButton;
-        startBtn.onClick(this.onStartGame, this);
-    }
+### Phase 3: Package Management
+- Ensure `.fui` binary packages and their associated atlases are loaded asynchronously before attempting to instantiate a `UIPanel`.
 
-    private onStartGame(): void {
-        console.log("Start button clicked!");
-        // Play FairyGUI transition/tween defined in the editor
-        this.view.getTransition("outAnim").play();
-    }
-}
-```
+## Common Rationalizations
+
+| Rationalization | Reality |
+|---|---|
+| "I'll just move the button 50 pixels to the right in the code." | UI layout MUST remain in the FairyGUI Editor. Altering coordinates in code breaks the designer-programmer contract and makes maintenance impossible. |
+| "I'll put the game logic inside the UI Button click handler." | UI components must remain dumb. They should only emit events to the overarching GameController. |
+
+## Red Flags
+
+- Hardcoded layout mathematics (changing widths, anchors, or rotations) inside C#/TS scripts.
+- Synchronous package loading blocking the main thread.
+
+## Verification
+
+Before finalizing the FairyGUI integration:
+- [ ] Zero layout logic exists in the codebase; it is strictly an event-binding layer.
+- [ ] Packages are loaded asynchronously via `UIPackage.AddPackageAsync`.
+- [ ] UI components emit events to controllers rather than mutating game state directly.

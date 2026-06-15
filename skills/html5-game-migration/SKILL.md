@@ -5,43 +5,44 @@ description: Migrates mechanics from full-scale games (Unity, Cocos) into lightw
 
 # HTML5 Game Migration
 
-This skill focuses on taking core mechanics from existing mobile games and recreating them in lightweight HTML5 frameworks (like Phaser, PixiJS, or Vanilla Canvas) or Svelte for playable ads.
+This skill governs the architectural migration from heavy 3D game engines into ultra-lightweight 2D HTML5/Canvas implementations to satisfy the strict payload limits (< 5MB) of playable ad networks.
 
-## Core Rules
-1. **KISS (Keep It Simple, Stupid)**: Do not port the entire game. Identify the "core loop" or "hook" and migrate only that specific interaction.
-2. **Separation of Concerns**: Keep game logic independent from the rendering layer to allow easy swapping between Canvas and WebGL contexts.
-3. **Asset Pruning**: Recreate complex 3D assets as pre-rendered 2D sprites or simple SVGs to drastically reduce payload size.
-4. **Cross-Platform**: Ensure the resulting build toolchain runs on Windows, macOS, and Linux without native binary dependencies.
+## When to Use
 
-## Reference Example
-A simple Vanilla JS structure for a lightweight migrated game loop:
+- **Use when** rewriting a Unity or Cocos mechanic into vanilla JS or PixiJS.
+- **Use when** faking 3D physics using 2D math (orthographic projections).
+- **NOT for** porting complete MMOs or heavy 3D WebGL scenes.
 
-```javascript
-class PlayableAd {
-    constructor(canvasId) {
-        this.canvas = document.getElementById(canvasId);
-        this.ctx = this.canvas.getContext('2d');
-        this.lastTime = 0;
-        this.state = 'idle'; // idle, playing, endcard
-    }
+## Core Process
 
-    start() {
-        this.state = 'playing';
-        requestAnimationFrame(this.loop.bind(this));
-    }
+### Phase 1: Mechanic Abstraction
+Identify the core loop. Strip away all unnecessary metagame systems.
+- If the original game uses 3D physics, convert it to simplified 2D AABB or Circle collision logic.
+- Do not attempt to import massive physics engines like Ammo.js or Box2D unless absolutely required.
 
-    loop(timestamp) {
-        if (this.state !== 'playing') return;
-        const dt = timestamp - this.lastTime;
-        this.lastTime = timestamp;
-        
-        this.update(dt);
-        this.render();
-        
-        requestAnimationFrame(this.loop.bind(this));
-    }
+### Phase 2: Asset Downsampling
+- Convert all 3D models into pre-rendered 2D sprite sheets.
+- Crush sprite sheets using TinyPNG or equivalent prior to base64 encoding.
 
-    update(dt) { /* Game Logic */ }
-    render() { /* Drawing Logic */ }
-}
-```
+### Phase 3: The Vanilla Loop
+- Implement a strict `requestAnimationFrame` loop.
+- Decouple logical state updates from the rendering context.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|---|---|
+| "I'll just export the Unity project to WebGL." | Unity WebGL often exceeds ad network payload limits and loads slowly. Complete vanilla JS rewrites are often required for premium ad performance. |
+| "I need to include Box2D for accurate bouncing." | Playable ads require "fun", not accuracy. Fake the bounce with a simple sine wave or explicit math interpolation (LERP) to save 200KB of payload. |
+
+## Red Flags
+
+- Importing heavy external physics or math libraries for simple logic.
+- Using the DOM (`<div>`) to render hundreds of moving particles instead of the Canvas API.
+
+## Verification
+
+Before finalizing the migration:
+- [ ] The core mechanic functions entirely on 2D Canvas or lightweight WebGL (PixiJS).
+- [ ] Heavy 3D assets have been successfully replaced with optimized 2D sprites.
+- [ ] The entire application, fully base64 encoded, sits comfortably under network payload limits.

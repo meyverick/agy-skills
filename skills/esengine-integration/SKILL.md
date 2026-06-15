@@ -1,44 +1,46 @@
 ---
 name: esengine-integration
-description: Integrates ESEngine for modular TypeScript game systems like behavior trees, spatial indexing, and client-prediction networking across rendering engines.
+description: Integrates ESEngine for modular TypeScript game systems. Use when implementing behavior trees, spatial indexing, or client-prediction networking.
 ---
 
 # ESEngine Integration
 
-This skill focuses on integrating the engine-agnostic ESEngine framework into JavaScript/TypeScript games (e.g., Cocos Creator, LayaAir, Phaser) to implement modular game AI, networking, and spatial structures without tightly coupling logic to the renderer.
+This skill standardizes the usage of ESEngine (Entity System Engine) for creating decoupled, data-driven game systems in TypeScript. It enforces spatial partitioning for collisions and pure Behavior Trees for AI.
 
-## Core Rules
-1. **Separation of Concerns (SoC)**: ESEngine modules must only contain logical data, states, and algorithms. Rendering operations must be isolated to the host engine (Cocos/Phaser) via an observer or event pattern.
-2. **Modular Architecture**: Only import required modules (e.g., `esengine/ai/behaviortree`) rather than the entire framework to keep payloads minimal (Green Software principle).
-3. **Defensive Programming**: Validate state transitions within ESEngine FSMs (Finite State Machines) to prevent undefined logic states.
+## When to Use
 
-## Reference Example
+- **Use when** architecting complex AI using Behavior Trees.
+- **Use when** optimizing 2D collisions with QuadTrees or Spatial Hash Grids.
+- **NOT for** simple linear scripts or UI management.
 
-```typescript
-import { BehaviorTree, Selector, Sequence, Action } from 'esengine/ai/behaviortree';
+## Core Process
 
-export class EnemyAI {
-    private bt: BehaviorTree;
+### Phase 1: Spatial Indexing
+- Never iterate over the entire entity array (`O(N^2)`) to check collisions or distances.
+- Always insert entities with colliders into an ESEngine Spatial Grid. Query the grid for nearby neighbors before running heavy AABB/Math.dist calculations.
 
-    constructor() {
-        // Build behavior tree: Attack if in range, otherwise patrol
-        this.bt = new BehaviorTree(
-            new Selector([
-                new Sequence([
-                    new Condition(this.isPlayerInRange.bind(this)),
-                    new Action(this.attackPlayer.bind(this))
-                ]),
-                new Action(this.patrol.bind(this))
-            ])
-        );
-    }
+### Phase 2: Behavior Trees
+- Construct AI logic using modular Behavior Tree nodes (`Selector`, `Sequence`, `Condition`, `Action`).
+- Do not write massive `switch/case` state machines. State should be implicit in the Tree's execution context.
 
-    public tick(dt: number) {
-        this.bt.tick(dt);
-    }
+### Phase 3: Client Prediction
+- Ensure systems are decoupled from rendering so they can be run "headlessly" on the server or fast-forwarded on the client for network reconciliation.
 
-    private isPlayerInRange(): boolean { /* Logic */ return false; }
-    private attackPlayer(): void { /* Attack logic */ }
-    private patrol(): void { /* Patrol logic */ }
-}
-```
+## Common Rationalizations
+
+| Rationalization | Reality |
+|---|---|
+| "I'll just loop through all entities to find the closest enemy." | An `O(N^2)` loop destroys framerates when entities > 100. You MUST use a spatial query to fetch only the 5-10 nearby entities. |
+| "I'll write the AI using a giant switch statement in the Update loop." | Complex AI states become unmaintainable. Behavior Trees allow modular, reusable logic nodes. |
+
+## Red Flags
+
+- Nested `for` loops checking `distance(A, B)` for every entity pair.
+- Hardcoded AI logic bypassing the `BehaviorTree` builder.
+
+## Verification
+
+Before finalizing the ESEngine integration:
+- [ ] Collision queries strictly utilize Spatial Hash Grids or QuadTrees.
+- [ ] AI is constructed via reusable Behavior Tree nodes.
+- [ ] Systems contain zero rendering logic (e.g., drawing to canvas directly).

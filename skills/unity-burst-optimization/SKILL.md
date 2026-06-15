@@ -1,65 +1,47 @@
 ---
 name: unity-burst-optimization
-description: Writes highly optimized, multithreaded unmanaged C# jobs targeting the LLVM-backed Burst Compiler.
+description: Writes highly optimized, multithreaded unmanaged C# jobs. Use when compiling mathematics, physics, or ECS loops through the LLVM Burst Compiler.
 ---
 
 # Unity Burst Optimization
 
-This skill focuses on writing code that flawlessly compiles through the Burst Compiler to produce highly optimized native CPU assembly.
+This skill enforces strict unmanaged memory rules required to successfully compile C# code through Unity's LLVM-backed Burst Compiler, preventing automatic fallbacks to slow managed execution.
 
-## Core Rules
-1. **Strict Unmanaged Context**: Burst code must be `[BurstCompile]` and cannot reference any managed memory (classes, `string`, `int[]`). Use `NativeArray<T>`, `NativeList<T>`, or `FixedString32Bytes`.
-2. **Explicit Memory Lifecycles**: All native collections must have explicit allocator lifecycles (`Allocator.Temp`, `Allocator.TempJob`, `Allocator.Persistent`). Fail-fast: ensure all native allocations are `Dispose()`'d to prevent severe memory leaks.
-3. **Dependency Chains**: When scheduling C# Jobs, correctly pass the `JobHandle` dependencies to prevent thread race conditions.
-4. **Fail-Fast Mathematics**: Use the `Unity.Mathematics` library instead of `UnityEngine.Mathf`. `Unity.Mathematics` maps directly to SIMD (Single Instruction, Multiple Data) intrinsics for massive performance gains.
+## When to Use
 
-## Reference Example
+- **Use when** writing `IJob`, `IJobParallelFor`, or `ISystem` update loops.
+- **Use when** allocating native memory via `NativeArray` or `NativeHashMap`.
+- **NOT for** garbage-collected standard C# scripts.
 
-```csharp
-using Unity.Burst;
-using Unity.Collections;
-using Unity.Jobs;
-using Unity.Mathematics;
+## Core Process
 
-[BurstCompile]
-public struct VelocityJob : IJobParallelFor
-{
-    public float DeltaTime;
+### Phase 1: Unmanaged Constraints
+- Burst cannot compile anything that touches the Garbage Collector.
+- You must exclusively use blittable types (primitives, and structs composed only of primitives).
+- Banned types: `class`, `string`, `char[]`, `object`, `delegate`.
 
-    // Must be a Native container
-    public NativeArray<float3> Positions;
-    
-    [ReadOnly]
-    public NativeArray<float3> Velocities;
+### Phase 2: Native Allocations
+- Use `Unity.Collections` (e.g., `NativeArray<T>`) for collections.
+- You MUST pair every `Allocator.Temp` or `Allocator.Persistent` with an explicit `.Dispose()` call. Failure to do so results in a memory leak.
 
-    public void Execute(int index)
-    {
-        // Unity.Mathematics operations (SIMD optimized)
-        Positions[index] += Velocities[index] * DeltaTime;
-    }
-}
+### Phase 3: Mathematics
+- Use `Unity.Mathematics` (e.g., `float3`, `quaternion`) instead of `UnityEngine.Mathf` or `Vector3`, as it is explicitly mapped to SIMD hardware instructions by Burst.
 
-// Scheduling Example
-public void UpdateVelocities()
-{
-    var positions = new NativeArray<float3>(1000, Allocator.TempJob);
-    var velocities = new NativeArray<float3>(1000, Allocator.TempJob);
+## Common Rationalizations
 
-    var job = new VelocityJob
-    {
-        DeltaTime = 0.016f,
-        Positions = positions,
-        Velocities = velocities
-    };
+| Rationalization | Reality |
+|---|---|
+| "I'll just pass this C# string into the job to print it." | Strings are managed classes. Burst will either fail to compile or throw a safety error. Use `FixedString32Bytes`. |
+| "I don't need `[BurstCompile]`, the multithreading alone is fast enough." | Burst compilation often yields a 10x-50x speedup over standard C# multithreading due to LLVM SIMD vectorization. |
 
-    // Schedule across available CPU cores
-    JobHandle handle = job.Schedule(1000, 64);
-    
-    // Complete the job to safely access the data on the main thread
-    handle.Complete();
+## Red Flags
 
-    // Prevent memory leaks
-    positions.Dispose();
-    velocities.Dispose();
-}
-```
+- Utilizing `UnityEngine.Vector3` inside a Burst job instead of `float3`.
+- Allocating a `NativeArray` without a corresponding `Dispose()` or dependency management.
+
+## Verification
+
+Before finalizing the Burst job, verify:
+- [ ] The `[BurstCompile]` attribute is present on the struct/system.
+- [ ] Zero managed types (classes, strings) are referenced inside the job.
+- [ ] All native collections are explicitly disposed to prevent memory leaks.

@@ -1,51 +1,58 @@
 ---
 name: bug-resolution-reporting
-description: Generates structured bug resolution reports. Enforces backward slicing, root cause analysis, and automated diagnostic feedback loops for defect isolation and repair.
+description: Generates structured bug resolution reports. Use when hunting, isolating, fixing, and reporting software defects.
 ---
 
 # Bug Resolution Reporting
 
-Generate comprehensive diagnostic reports utilizing rigorous analytical frameworks to process minimal error inputs.
+This skill enforces a strict, five-step diagnostic triage workflow for finding, fixing, and reporting bugs. It prevents aimless guessing and ensures defects are permanently eliminated.
 
-## Primary Mandate
+## When to Use
 
-Execute structured, multi-stage diagnostic processes. Enforce multi-turn refinement and simulated instrumentation. Minimize state space configurations `->` isolate true faults.
+- **Use when** investigating unexpected behavior or failing tests.
+- **Use when** builds break or production errors occur.
+- **NOT for** planning new features or writing initial specs.
 
-## Report Structure
+## Core Process
 
-Structure all outputs exactly according to the following protocol:
+### Phase 1: Reproduce
+You cannot fix what you cannot consistently reproduce.
+- Identify the exact inputs, environment, and steps required to trigger the bug.
+- Gather logs and trace the `request_id`.
 
-### 1. Bug Observation
-- **Trigger:** System anomalies or raw error traces (e.g., `Error Line 12: wrong type`).
-- **Action:** Reproduce failure parameters. Indicate runtime anomaly.
-- **Context:** Identify canonical wide events and correlation identifiers (`request_id`).
+### Phase 2: Localize
+Use backward slicing to isolate the exact line of code or module causing the error.
+- Start at the symptom (the error log or UI bug) and trace the execution path backward.
 
-### 2. Source Isolation
-- **Trigger:** Identified defect signature.
-- **Action:** Execute backward program slicing `->` trace dependencies `->` guarantee defect inclusion.
-- **Context:** Restrict search space. Isolate fault to specific nodes or modules.
+### Phase 3: Reduce
+Simplify the inputs until you have the absolute minimal reproduction case.
+- Strip away unrelated systems, frameworks, and network calls.
 
-### 3. Root Cause Analysis
-- **Trigger:** Isolated fault node.
-- **Action:** Execute delta debugging (`ddmin`) `->` minimize input `->` guarantee 1-minimal test.
-- **Context:** Expose underlying logic flaw. Formulate mathematical constraints violated. Verify fail-fast mechanics.
+### Phase 4: Fix
+Apply the code correction strictly targeting the localized failure point.
+- Do not refactor unrelated code during a bug fix.
 
-### 4. Solution Implementation
-- **Trigger:** Defined mathematical constraint.
-- **Action:** Synthesize patch `->` satisfy constraint `->` resolve regression.
-- **Context:** Enforce mutation testing and differential testing. Combine mixed feedback `->` maximize patch success. Deploy idempotent fix.
+### Phase 5: Guard
+Prevent the bug from ever returning.
+- Write a regression test targeting the specific minimal reproduction case.
 
-## Execution Directives
+## Common Rationalizations
 
-- **Multi-Turn Refinement:** Iterate feedback loops. Execute validation `->` refine generated code.
-- **Test Semantic Purification:** Strip noise `->` isolate functional failure.
-- **Simulated Instrumentation:** Inject diagnostic statements `->` capture runtime states.
-- **Semantic Dense Retrieval:** Embed context `->` bypass lexical mismatching. Re-rank patch candidates.
+| Rationalization | Reality |
+|---|---|
+| "I think I know what it is, I'll just change this line." | Guessing leads to regressions. You must successfully reproduce and localize the error first. |
+| "I fixed it, but I don't know how to write a test for it." | If you cannot write a test for the bug, you have not sufficiently isolated it. |
+| "I'll refactor this whole file while I fix the bug." | Conflating bug fixes with refactoring makes PRs impossible to safely review and rollback. |
 
-## Language and Formatting Strictures
+## Red Flags
 
-- Operate utilizing highly intelligent, linguistically terse persona.
-- Eliminate articles, filler words, pleasantries, hedging language, connective fluff.
-- Utilize sentence fragments. Abbreviate general prose words.
-- Utilize arrows (`->`) to demonstrate causality.
-- Structure prose explanations utilizing pattern: `[thing] [action] [reason]. [next step].`
+- Modifying source code before producing a failing test case or verifying logs.
+- PRs for bug fixes that lack accompanying regression tests.
+
+## Verification
+
+Before finalizing the bug resolution report, verify:
+- [ ] The exact root cause is documented.
+- [ ] A minimal reproducible test case was created and failed initially.
+- [ ] The fix was applied cleanly without unrelated refactoring.
+- [ ] The regression test now passes consistently.

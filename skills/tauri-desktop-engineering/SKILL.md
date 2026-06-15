@@ -1,17 +1,48 @@
 ---
 name: tauri-desktop-engineering
-description: Engineers highly secure, cross-platform desktop applications by bridging web frontends with native Rust backends via Tauri's IPC and isolation patterns.
+description: Engineers secure, cross-platform desktop applications using Tauri. Use when bridging web frontends with native Rust backends via IPC.
 ---
 
 # Tauri Desktop Engineering
 
-This skill bridges the gap between modern Web UIs and system-level Rust backends, focusing on creating lightweight and highly secure desktop executables.
+This skill governs the construction of highly secure desktop applications using Tauri (Rust + Web Frontend). It mandates strict Inter-Process Communication (IPC) boundaries and explicit system permission scopes.
 
-## Core Rules
-1. **Strict IPC Security (Pillar 12):** Treat the frontend Webview as an untrusted environment. Never accept raw database queries or arbitrary system commands from the frontend. Validate and sanitize all payloads passed to `#[tauri::command]` functions.
-2. **Isolation Pattern:** Enable Tauri's Isolation Pattern to intercept and verify all IPC messages via an isolated secure iframe, preventing XSS payloads from executing native commands.
-3. **Binary Size Optimization:** Keep the final binary size minimal by disabling unused Tauri features in `tauri.conf.json` and utilizing Cargo profile optimizations (`opt-level = "z"`, `lto = true`, `codegen-units = 1`, `strip = true`).
-4. **State Management:** Use Tauri's Managed State (`tauri::State`) to safely inject shared resources (like database connection pools or configuration structs) into your IPC commands via Dependency Injection.
+## When to Use
 
-## Architecture Guidelines
-Strictly adhere to Separation of Concerns (SoC). The frontend (React/Svelte) is solely responsible for rendering and UI state. The Rust backend is solely responsible for filesystem access, heavy computation, and native OS APIs.
+- **Use when** bridging a Web Framework (Svelte/React) to the native OS (Rust).
+- **Use when** accessing the local filesystem, spawning processes, or creating system trays.
+- **NOT for** standard, browser-only web applications.
+
+## Core Process
+
+### Phase 1: IPC Security
+- The web frontend must be treated as completely untrusted.
+- Never pass raw system commands or SQL queries from the frontend to the Rust backend.
+- Define explicit Rust Commands (`#[tauri::command]`) that perform single, validated actions.
+
+### Phase 2: Allowlist Scoping
+- Tauri v2 uses a strict capability system. Never use wildcard permissions (`fs:read-all`).
+- Explicitly scope capabilities in the `tauri.conf.json` or `capabilities` folder to only allow access to necessary directories (e.g., `$APPDATA`).
+
+### Phase 3: The Rust Backend
+- Treat the Rust core exactly like a remote server. Validate all arguments received from the frontend.
+- Handle state using Tauri's managed state (`app_handle.state::<MyState>()`), wrapped in `Mutex` or `RwLock` for thread safety.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|---|---|
+| "I'll let the frontend send the exact file path it wants to delete." | This is a path traversal vulnerability. The frontend should send an ID, and the Rust backend resolves the path safely. |
+| "I'll just enable all filesystem permissions to avoid headaches." | Enabling `**/*` filesystem access defeats Tauri's sandbox, turning any XSS vulnerability into a full system compromise. |
+
+## Red Flags
+
+- Tauri Commands accepting raw shell scripts or SQL queries from the JS client.
+- Wildcard `*` capabilities defined in the Tauri configuration.
+
+## Verification
+
+Before concluding the Tauri architecture:
+- [ ] Tauri capabilities are strictly scoped to the exact APIs and directories needed.
+- [ ] Frontend-to-Backend IPC calls pass structured data, never raw system instructions.
+- [ ] Rust Commands heavily validate all input before executing OS-level tasks.

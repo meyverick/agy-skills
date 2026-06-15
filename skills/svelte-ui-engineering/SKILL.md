@@ -1,139 +1,57 @@
 ---
 name: svelte-ui-engineering
-description: Engineers high-performance user interfaces and advanced motion design using Svelte and SvelteKit. Uses Svelte 5 runes ($state, $derived, $effect), reactive UI architecture, and seamless page transitions. Leverages native Svelte transition/animation modules or external libraries (Motion One, GSAP) for complex orchestration.
-license: Apache-2.0
+description: Engineers high-performance user interfaces using Svelte 5 runes and snippets. Use when building UI components, orchestrating complex animations, or architecting reactive state.
 ---
 
 # Svelte UI Engineering
 
-This skill outlines the process of designing and building high-performance, fluid, and reactive user interfaces using Svelte 5 and SvelteKit. It focuses on the strict adoption of Svelte 5 runes, performant motion design, and robust validation protocols.
+This skill governs the construction of modern, highly reactive user interfaces using Svelte 5. It strictly enforces the usage of Runes for state management, Svelte 5 Snippets for layout composition, and immutable architectural patterns (SOLID/KISS/SoC) to prevent prop-drilling and spaghetti state.
 
-## Activation Criteria
+## When to Use
 
-Use this skill when:
-- Creating or refactoring Svelte components, specifically migrating to or using Svelte 5.
-- Implementing reactive state management using runes (`$state`, `$derived`, `$effect`).
-- Designing complex micro-interactions, animations, and SvelteKit page transitions.
-- Auditing UI components for rendering performance, layout thrashing, and accessibility.
+- **Use when** creating new `.svelte` components or updating existing UI layouts.
+- **Use when** implementing client-side state management.
+- **Use when** choreographing layout transitions and micro-animations.
+- **NOT for** server-side data fetching or database mutations.
 
----
+## Core Process
 
-## 1. Svelte 5 Runes Protocol (Reactivity)
+### Phase 1: State Management via Runes
+Svelte 5 mandates Runes. Avoid all legacy `let` reactive declarations.
+- Use `$state()` for deep reactivity.
+- Use `$derived()` for computed values based on `$state`.
+- Use `$effect()` sparingly, and strictly for DOM interactions or third-party library synchronization.
 
-Enforce strict adoption of Svelte 5 paradigms. Legacy Svelte 4 reactivity is deprecated in this context.
+### Phase 2: Component Architecture & Snippets (Composition)
+Keep components extremely small and modular (KISS principle).
+- **Snippets:** Use Svelte 5 Snippets (`{@render snippet()}` and `{#snippet child()}`) to compose complex UIs. Do not use the legacy `<slot>` syntax.
+- **Event Handlers:** Use the Svelte 5 lowercase event attribute syntax (`onclick={handler}`). Do not use the legacy `on:click` syntax.
+- Encapsulate scoped CSS strictly within the `<style>` block.
 
-*   **State (`$state`)**: Use `$state` for all reactive variables. Do not use standard `let` declarations for reactive state.
-*   **Derived State (`$derived`)**: Use `$derived` for computed values based on `$state`. Avoid recalculating values inside template markup if they can be cached via `$derived`.
-*   **Props (`$props`)**: Destructure component props using `$props()`. Do not use `export let`.
-*   **Effects (`$effect`)**: Use `$effect` for side effects. 
-    *   **Cleanup**: Always return a cleanup function from `$effect` if listeners, intervals, or external subscriptions are created, preventing memory leaks (Defensive Programming).
-*   **Snippets**: Prefer snippets (`{#snippet ...}`) over slots for component composition and reusable markup chunks.
+### Phase 3: Motion & Interactions
+Modern UIs demand fluid motion.
+- Default to Svelte's native `svelte/transition` (fade, slide, fly) for enter/exit animations.
+- Use `svelte/animate` (`flip`) for list reordering.
+- For complex orchestration (e.g., staggering, path following), fallback to external libraries like Motion One or GSAP.
 
----
+## Common Rationalizations
 
-## 2. Motion & Animation Architecture
+| Rationalization | Reality |
+|---|---|
+| "I'll just use Svelte 4 `<slot>` and `on:click`, it still works." | Svelte 5 Snippets and `onclick` provide superior type safety and performance. Legacy syntax must be explicitly avoided in new engineering. |
+| "I'll handle this animation in standard CSS classes." | Native Svelte transitions are hardware-accelerated, guarantee cleanup, and sync perfectly with the component lifecycle. |
 
-*   **Native Svelte Modules**: For standard UI interactions (fade, slide, fly, crossfade), default to Svelte's native `svelte/transition` and `svelte/animate`.
-*   **Springs & Tweens**: Use `svelte/motion` (`spring`, `tweened`) for fluid, physics-based UI state changes (e.g., following a cursor, draggable elements).
-*   **Complex Orchestration**: When animations require complex timelines, sequencing, or SVG morphing beyond native capabilities, integrate external libraries like **Motion One** (optimized bundle size) or **GSAP**.
-*   **SvelteKit View Transitions**: Use the native View Transitions API within SvelteKit's `onNavigate` hook to create seamless, app-like page navigations.
+## Red Flags
 
----
+- Using `$: variable = ...` instead of `$derived()`.
+- Using `<slot>` instead of `{#snippet}`.
+- Using `on:click` instead of `onclick`.
+- Extensive `$effect()` blocks triggering infinite re-renders.
 
-## 3. Payload & Performance Optimization (Green Software Engineering)
+## Verification
 
-Minimize UI rendering overhead and carbon footprint by optimizing payload and execution:
-
-*   **Hardware Acceleration**: Force hardware acceleration for animated elements using CSS `will-change: transform, opacity` or `transform: translateZ(0)`.
-*   **Avoid Layout Thrashing**: Animate only compositing properties (`transform`, `opacity`). Never animate `width`, `height`, `margin`, `padding`, or `top`/`left` directly. Use the FLIP technique for layout changes.
-*   **Conditional Rendering**: Use `{#if}` blocks to completely remove hidden elements from the DOM rather than hiding them via CSS `display: none` or `opacity: 0` (unless animation requires it), saving memory.
-
----
-
-## 4. Self-Validation Protocol (Defensive Programming)
-
-Before finalizing any Svelte UI component, verify against this checklist:
-
-- [ ] **Runes Syntax Validity**: Ensure no legacy reactivity (`export let`, `$:`) is present. All reactive state must use runes.
-- [ ] **Effect Cleanup**: Confirm all `$effect` blocks containing side effects return a cleanup function.
-- [ ] **Accessibility (A11y)**: Ensure animations respect user preferences using `@media (prefers-reduced-motion: reduce)`. Disable or significantly reduce motion when this preference is active.
-- [ ] **Event Modifier Safety**: Use Svelte's native event modifiers (e.g., `|preventDefault`, `|stopPropagation`) instead of imperative JS calls inside handlers.
-- [ ] **Type Safety**: Ensure TypeScript is strictly typed within `<script lang="ts">`, typing all `$props()` interfaces.
-
----
-
-## 5. Common Edge Cases & Troubleshooting
-
-*   **Hydration Mismatches**: If animations trigger during Server-Side Rendering (SSR), it can cause visual glitches during client hydration. Ensure entry animations only fire after the component has mounted on the client, or disable SSR for highly dynamic, non-SEO motion components.
-*   **Stale State in Closures**: When using external animation libraries (like GSAP) inside `$effect`, ensure the animation logic correctly reacts to `$state` changes by explicitly referencing the state inside the effect block, allowing Svelte to track the dependency.
-
----
-
-## Reference Example
-
-Below is a compliant Svelte 5 component demonstrating runes, native spring motion, and proper effect cleanup.
-
-```svelte
-<script lang="ts">
-	import { spring } from 'svelte/motion';
-	import { fade } from 'svelte/transition';
-
-	// Svelte 5 Runes
-	let { initialX = 0, initialY = 0 } = $props<{
-		initialX?: number;
-		initialY?: number;
-	}>();
-
-	let isHovered = $state(false);
-
-	// Physics-based motion
-	let coords = spring(
-		{ x: initialX, y: initialY },
-		{ stiffness: 0.1, damping: 0.25 }
-	);
-
-	let size = $derived(isHovered ? 1.2 : 1);
-
-	// Defensive Programming: Cleanup in effect
-	$effect(() => {
-		const handleGlobalClick = () => {
-			coords.set({ x: 0, y: 0 }); // Reset on global click
-		};
-		window.addEventListener('click', handleGlobalClick);
-
-		// Cleanup function
-		return () => window.removeEventListener('click', handleGlobalClick);
-	});
-</script>
-
-<!-- Accessibility: Disable hover effects if user prefers reduced motion (handled in CSS usually, but state is tracked here) -->
-<button
-	class="motion-button"
-	onmouseenter={() => (isHovered = true)}
-	onmouseleave={() => (isHovered = false)}
-	style="transform: translate({$coords.x}px, {$coords.y}px) scale({size})"
-	in:fade={{ duration: 300 }}
->
-	Interactive Element
-</button>
-
-<style>
-	.motion-button {
-		will-change: transform; /* Hardware acceleration */
-		padding: 1rem 2rem;
-		background: #000;
-		color: #fff;
-		border: none;
-		border-radius: 8px;
-		cursor: pointer;
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.motion-button {
-			/* Disable hardware accelerated scale in CSS for a11y */
-			transition: none;
-			transform: none !important;
-		}
-	}
-</style>
-```
+Before finalizing the UI component, verify:
+- [ ] All reactive state utilizes `$state`, `$derived`, or `$props`.
+- [ ] Layout composition strictly utilizes Svelte 5 Snippets (`{@render}`).
+- [ ] All event handlers use the modern lowercase syntax (`onclick`, `onkeydown`).
+- [ ] Styles are scoped and do not leak globally.

@@ -1,57 +1,47 @@
 ---
 name: playable-ad-telemetry
-description: Implements custom interaction tracking and network-specific telemetry events for playable ads without relying on heavy third-party SDKs.
+description: Implements custom interaction tracking for playable ads. Use when logging user interactions without relying on heavy third-party SDKs.
 ---
 
 # Playable Ad Telemetry
 
-This skill implements lightweight, custom event tracking within playable ads to provide the network (e.g., Voodoo, Meta, AppLovin) with granular data on user interactions (first click, level complete, CTA click).
+This skill governs the integration of lightweight, custom telemetry and event tracking directly into the playable ad, avoiding the payload bloat associated with heavy SDKs like Firebase or Amplitude.
 
-## Core Rules
-1. **Discrete State Triggers:** Do not log continuous telemetry data (such as ticking scores or exact pixel tracking) inside the `update()` loop. Isolate telemetry strictly to discrete user state shifts (e.g., `ad_loaded`, `tutorial_completed`, `first_interaction`, `core_loop_win_loss`, `cta_clicked`).
-2. **Zero-Weight Beacons:** Prioritize `navigator.sendBeacon()` for asynchronous data transfer to avoid blocking the main rendering loop or adding payload weight.
-3. **Fail-Fast & FEAR**: Wrap telemetry calls in `try...catch` blocks to ensure that tracking failures do not crash the ad or interrupt the user experience.
-4. **Defensive Programming**: Validate network endpoints and ensure objects like `window.webkit.messageHandlers` or `mraid` exist before invoking them.
-5. **No Heavy Dependencies**: Do not include heavy SDKs. Use native `fetch()`, `sendBeacon()`, or the specific ad network's JS bridge.
-6. **Data Privacy**: Strictly mask PII/PHI. Never track device IDs directly from the web view.
+## When to Use
 
-## Reference Example
+- **Use when** tracking "First Interaction", "Level Complete", or "Fail State" events in a playable ad.
+- **Use when** firing custom tracking pixels.
+- **NOT for** integrating massive, full-stack analytics suites.
 
-```javascript
-class MicroAnalytics {
-    static ENDPOINT = "https://your-telemetry-sink.com/v1/track";
+## Core Process
 
-    static logMilestone(step, eventName, payload = {}) {
-        try {
-            const eventData = { ts: Date.now(), step, act: eventName, ...payload };
-            
-            // 1. Zero-allocation check for MRAID/Network tracking environments
-            if (typeof window !== 'undefined' && window.mraid) {
-                if (window.mraid.logEvent) window.mraid.logEvent(eventName);
-            }
-            // 2. iOS WebKit bridge fallback
-            else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.tracking) {
-                window.webkit.messageHandlers.tracking.postMessage(JSON.stringify(eventData));
-            } 
-            // 3. Custom REST Beacon (Zero-Weight Telemetry)
-            else if (navigator.sendBeacon) {
-                navigator.sendBeacon(this.ENDPOINT, JSON.stringify(eventData));
-            } 
-            // 4. High-performance asynchronous fetch fallback
-            else if (typeof fetch !== 'undefined') {
-                fetch(this.ENDPOINT, { 
-                    method: "POST", 
-                    body: JSON.stringify(eventData), 
-                    mode: "no-cors" 
-                }).catch(e => { /* Ignore network errors */ });
-            }
-        } catch (e) {
-            console.error("Telemetry failed safely:", e);
-        }
-    }
-}
+### Phase 1: The Lightweight Pixel
+- Most playable ad telemetry is tracked via a simple `fetch()` or `Image()` pixel request.
+- `const img = new Image(); img.src = "https://tracker.com/event?type=click";`
 
-// Usage: Triggered strictly on discrete state shifts
-MicroAnalytics.logMilestone(1, "ad_loaded");
-MicroAnalytics.logMilestone(2, "first_interaction", { x: 120, y: 300 });
-```
+### Phase 2: Non-Blocking Execution
+- Telemetry must NEVER block the game rendering loop.
+- Execute network calls asynchronously, and immediately discard errors to prevent the game from crashing if the tracker goes down.
+
+### Phase 3: Network Agnosticism
+- Different networks (AppLovin, IronSource) have different macros (e.g., `{DEVICE_ID}`). 
+- Ensure your telemetry strings safely replace or ignore unresolved macros without crashing.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|---|---|
+| "I'll install the Google Analytics SDK via npm." | Full SDKs add 100KB+ to the payload. Playable ads only need lightweight pixel tracking. Use raw JS `fetch` or `Image` beacons. |
+| "I'll await the telemetry response before showing the CTA." | Telemetry is fire-and-forget. Awaiting the response will lock the ad if the user has a poor connection, costing you a conversion. |
+
+## Red Flags
+
+- `await fetch()` calls on telemetry endpoints inside critical UI interactions.
+- Importing massive third-party analytics libraries (`amplitude-js`, `firebase`).
+
+## Verification
+
+Before finalizing the telemetry integration:
+- [ ] The tracking is executed via lightweight HTTP calls (Image pixels or async fetch).
+- [ ] No `await` blocks or synchronous code hold up the game loop for telemetry.
+- [ ] The total code footprint for telemetry is under 100 lines.

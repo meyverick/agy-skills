@@ -1,17 +1,47 @@
 ---
 name: pnpm-workspace-management
-description: Manages monorepo workspaces, strict dependency resolution, and optimized lockfiles using pnpm to ensure reproducible, space-efficient builds.
+description: Manages monorepo workspaces and strict dependency resolution using pnpm. Use when configuring workspaces, lockfiles, or resolving ghost dependencies.
 ---
 
-# pnpm Workspace Management
+# PNPM Workspace Management
 
-This skill governs the use of `pnpm` as the primary ecosystem tool for dependency management and workspace orchestration. It strictly enforces `pnpm` usage over legacy alternatives like `npm` or `yarn` to maximize runtime performance and installation velocity (Global Rule 1).
+This skill governs the configuration and strict dependency resolution of `pnpm` monorepos. It prevents "ghost dependency" leaks and guarantees deterministic, highly cached builds across environments.
 
-## Core Rules
-1. **Strict Monorepo Workspaces:** Explicitly manage multi-package repositories using `pnpm-workspace.yaml`. Ensure all local packages reference each other via `workspace:*` protocols to prevent version desync.
-2. **Phantom Dependency Prevention:** Rely on `pnpm`'s strict `node_modules` symlinking structure. Do not assume dependencies of dependencies are accessible; explicitly declare every imported package in `package.json`.
-3. **Reproducible Builds:** Always commit `pnpm-lock.yaml`. CI/CD pipelines must strictly use `pnpm install --frozen-lockfile` to prevent drift.
-4. **Script Standardization:** Prefix all execution scripts with `pnpm` (e.g., `pnpm dev`, `pnpm build`). Avoid global installations; utilize `pnpm dlx` or `pnpm exec` for one-off binary executions.
+## When to Use
 
-## Architecture Guidelines
-Organize workspaces by Domain-Driven Design (DDD). Applications should reside in `apps/`, while shared libraries, configurations, and core infrastructure logic should reside in `packages/`.
+- **Use when** initializing a new monorepo `pnpm-workspace.yaml`.
+- **Use when** adding dependencies across multiple shared packages (`pnpm --filter`).
+- **NOT for** standard `npm` or `yarn` repositories.
+
+## Core Process
+
+### Phase 1: Strict Boundaries
+- `pnpm` uses a symlinked `node_modules` structure to prevent ghost dependencies (packages accessible without being explicitly in `package.json`).
+- If a package needs a dependency, it MUST be explicitly installed in that specific package's `package.json`, not just at the monorepo root.
+
+### Phase 2: Workspace Filtering
+- Never `cd` into a directory to run an install.
+- Always use workspace filtering from the root: `pnpm --filter @my-org/frontend add lodash`.
+
+### Phase 3: Lockfile Integrity
+- The `pnpm-lock.yaml` is the ultimate source of truth. Never manually edit it.
+- In CI/CD pipelines, always run `pnpm install --frozen-lockfile` to ensure deterministic builds.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|---|---|
+| "I'll just run `npm install` because `pnpm` is throwing an error." | Mixing package managers destroys the lockfile and creates bizarre symlink errors. In a pnpm workspace, `npm install` is strictly forbidden. |
+| "It works locally, so the dependency must be there." | Ghost dependencies work locally if hoisted by accident. CI will fail. Explicitly define all imports in `package.json`. |
+
+## Red Flags
+
+- The existence of a `package-lock.json` or `yarn.lock` inside a pnpm workspace.
+- Using `cd packages/api && pnpm install` instead of `pnpm --filter`.
+
+## Verification
+
+Before concluding workspace management:
+- [ ] Only a single `pnpm-lock.yaml` exists at the root.
+- [ ] All packages define their exact dependencies explicitly (no relying on root hoisting).
+- [ ] CI scripts enforce `--frozen-lockfile`.

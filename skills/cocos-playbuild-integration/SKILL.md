@@ -1,17 +1,47 @@
 ---
 name: cocos-playbuild-integration
-description: Configures Cocos Creator macro-build exports for playable ads, bundling network APIs and mapping telemetry via slim interfaces like PlayBuildLibrary.ts.
+description: Configures Cocos Creator macro-build exports. Use when bundling Cocos mechanics into single-file playable ads.
 ---
 
-# Cocos PlayBuild Integration
+# Cocos Playbuild Integration
 
-This skill focuses on configuring and optimizing the export pipeline for playable ads built with Cocos Creator 3.x, utilizing tools like PlayBuild or CreatePlayAd. 
+This skill standardizes the export of a Cocos Creator 3.x project into a single-file, highly compressed HTML payload for playable ads, using specific macro overrides and build templates.
 
-## Core Rules
-1. **Network API Bridging:** Always map engine-level gameplay funnel events into the network's native event hooks (e.g., `mraid.reportDOMEvent()`, `window.gameReady()`) during the macro-build step.
-2. **PlayBuildLibrary Abstraction:** Use ultra-slim interfaces like `PlayBuildLibrary.ts` (< 5 KB) to decouple Cocos game logic from the destination ad network's proprietary entry points (`Playable.InstallGame()`).
-3. **Green Software Compliance:** Ensure the final macro-build strictly adheres to ad network size constraints (typically < 2MB to 5MB), stripping out unused engine modules during the build pipeline.
-4. **Defensive Programming:** Always check for the existence of platform-specific window objects (`window.mraid`, etc.) before triggering telemetry to prevent breaking the web view if testing locally.
+## When to Use
 
-## Architecture Guidelines
-When setting up the macro-build, isolate all network-specific wrappers outside of the main Cocos `assets/scripts/` folder if possible, injecting them at compile time into the final `index.html` template.
+- **Use when** exporting a playable ad from Cocos Creator.
+- **Use when** hooking Cocos input events to external MRAID wrappers.
+- **NOT for** standard PC or mobile app exports.
+
+## Core Process
+
+### Phase 1: Engine Stripping (Macros)
+- In `Project Settings -> Macro Config`, explicitly disable `ENABLE_WEBGL_ANTIALIAS`, `ENABLE_WEBGL_DEPTH_TEXTURE`, and `ENABLE_PHYSICS_3D` if the ad is 2D.
+- Enable `CLEANUP_IMAGE_CACHE`.
+
+### Phase 2: Single-File Bundling
+- Utilize a custom build template (`build-templates/web-mobile`) that explicitly base64 encodes the generated `cocos-js` engine and asset bundle.
+- Ensure the build pipeline injects all generated code into a single `index.html`.
+
+### Phase 3: The PlayBuildLibrary Interface
+- Do not write raw `mraid` calls directly inside Cocos TypeScript components.
+- Write a slim `PlayBuildLibrary.ts` interface that emits standard events (`GAME_START`, `GAME_END`, `CTA_CLICKED`). The external HTML wrapper listens to these events to trigger network-specific SDKs.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|---|---|
+| "I'll just manually copy-paste the JS into the HTML after building." | Manual steps fail and are not reproducible. You must use Cocos `build-templates` to automate the single-file injection. |
+| "I'll call `mraid.open()` inside the Cocos button click handler." | This hardcodes the game to one network. You must emit a `CTA_CLICKED` event to the wrapper instead. |
+
+## Red Flags
+
+- Missing custom `build-templates` forcing manual HTML post-processing.
+- Heavy 3D physics macros left enabled for simple 2D games.
+
+## Verification
+
+Before finalizing the Cocos integration:
+- [ ] The export pipeline automatically generates a standalone `index.html` file.
+- [ ] The `PlayBuildLibrary` acts as the sole bridge between Cocos TS and the outer DOM.
+- [ ] Engine macros are aggressively stripped for performance.

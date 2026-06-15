@@ -1,28 +1,48 @@
 ---
 name: playable-ad-packaging
-description: Packages HTML5 games into a single HTML file with inline assets (base64) for ad networks like Voodoo, AppLovin, or IronSource. Ensures Green Software minimum payload constraints.
+description: Packages HTML5 games into a single HTML file. Use when generating final deliverables for Voodoo, AppLovin, or IronSource.
 ---
 
 # Playable Ad Packaging
 
-This skill orchestrates the packaging of HTML5 games into a single `.html` file, a strict requirement for playable ad networks. It relies on base64 encoding for images and audio, and inline `<style>` and `<script>` tags.
+This skill enforces the stringent packaging requirements for modern playable ad networks, ensuring the entire HTML5 experience is contained within a single `index.html` file with zero external HTTP dependencies.
 
-## Core Rules
-1. **Single File Output**: Everything must be merged into one `index.html` file. No external requests are allowed (except authorized telemetry/MRAID).
-2. **Green Software Engineering**: Minimize payload size. Compress images (WebP/TinyPNG equivalents) and minify CSS/JS before inlining.
-3. **Cross-Platform Compatibility**: Use OS-agnostic Node.js scripts or standard tools instead of Unix-specific pipes (`grep`, `sed`, `awk`) when building scripts for this process.
+## When to Use
 
-## Reference Example
-Here is a Node.js snippet demonstrating OS-agnostic file reading and base64 encoding:
+- **Use when** compiling or bundling the final playable ad output.
+- **Use when** converting images or audio to base64.
+- **NOT for** standard web deployment workflows (where CDNs are preferred).
 
-```javascript
-const fs = require('fs');
-const path = require('path');
+## Core Process
 
-// Read an image and convert to base64
-const imagePath = path.join(__dirname, 'assets', 'sprite.png');
-const imageBuffer = fs.readFileSync(imagePath);
-const base64Image = `data:image/png;base64,${imageBuffer.toString('base64')}`;
+### Phase 1: Inline Everything
+Playable ad networks strictly ban external network requests during execution to prevent malicious tracking and guarantee offline performance.
+- ALL JavaScript must be injected into `<script>` tags in the HTML body.
+- ALL CSS must be injected into `<style>` tags in the HTML `<head>`.
 
-console.log(`<img src="${base64Image}" />`);
-```
+### Phase 2: Base64 Asset Encoding
+- ALL images (`.png`, `.jpg`, `.webp`) must be encoded to base64 and embedded directly as `data:image/png;base64,...`.
+- ALL audio (`.mp3`, `.ogg`) must be encoded to base64 and embedded directly.
+
+### Phase 3: Payload Minification
+- The final `index.html` file must be aggressively minified using tools like HTMLMinifier or Terser.
+- Remove all console logs, comments, and debug maps.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|---|---|
+| "I'll just load this font from Google Fonts." | External network requests are blocked by ad networks. The font must be base64 encoded into the CSS or removed entirely. |
+| "Base64 encoding increases file size by 33%, I'll use a zip file." | Networks require a raw `.html` file. The 33% base64 bloat is expected and factored into the 5MB limit. |
+
+## Red Flags
+
+- `http://` or `https://` strings anywhere in the final HTML document.
+- `<script src="...">` tags pointing to external files.
+
+## Verification
+
+Before finalizing the package, verify:
+- [ ] The entire project is compressed into exactly one `index.html` file.
+- [ ] A grep search for `http` yields zero external asset URLs.
+- [ ] All images and audio are embedded via base64 data URIs.

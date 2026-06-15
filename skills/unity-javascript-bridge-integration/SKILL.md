@@ -1,72 +1,48 @@
 ---
 name: unity-javascript-bridge-integration
-description: Integrates WebGL JS libraries (.jslib) into Unity C# scripts to safely communicate with browser-level APIs like MRAID or custom telemetry.
+description: Integrates WebGL JS libraries (.jslib) into Unity C# scripts. Use when safely communicating with browser-level APIs like MRAID or custom telemetry.
 ---
 
 # Unity JavaScript Bridge Integration
 
-This skill focuses on the exact technical integration layer required to pass data between Unity's C# (WASM) and the browser's JavaScript environment without causing memory leaks.
+This skill governs the secure memory marshaling and bridging between Unity's C# WebAssembly environment and the native browser JavaScript DOM via `.jslib` plugins.
 
-## Core Rules
-1. **SoC (Separation of Concerns)**: Keep all browser interaction within `.jslib` files in the `Plugins/WebGL` directory. Do not scatter `[DllImport]` across gameplay scripts.
-2. **Defensive Memory Marshalling**: When passing strings from C# to JS, convert the memory pointers safely using `UTF8ToString()`. 
-3. **Fail-Fast & FEAR**: Ensure Unity-to-JS calls catch exceptions in JS. If the browser API (like MRAID) is missing, it must not crash the WASM application.
-4. **Bidirectional Communication**: Use `SendMessage(objectName, methodName, value)` from JS to send callbacks back to Unity.
+## When to Use
 
-## Reference Example
+- **Use when** calling browser `window` APIs from Unity C# (e.g., MRAID `open()`).
+- **Use when** passing data (strings, arrays) from JS into Unity `SendMessage`.
+- **NOT for** standard Unity game logic.
 
-**1. The JavaScript Library (Plugins/WebGL/AdBridge.jslib)**
-```javascript
-mergeInto(LibraryManager.library, {
-  CallMraidOpen: function (urlPtr) {
-    var url = UTF8ToString(urlPtr);
-    try {
-      if (typeof mraid !== 'undefined') {
-        mraid.open(url);
-      } else {
-        window.open(url, '_blank');
-      }
-    } catch (e) {
-      console.error("Failed to open MRAID link", e);
-    }
-  },
-  
-  // Example of calling back to Unity
-  TriggerUnityEvent: function() {
-    try {
-      // Ensure the GameObject 'AdManager' has a method 'OnBrowserEvent'
-      SendMessage('AdManager', 'OnBrowserEvent', 'success');
-    } catch (e) {
-      console.warn("Could not send message to Unity", e);
-    }
-  }
-});
-```
+## Core Process
 
-**2. The C# Wrapper**
-```csharp
-using UnityEngine;
-using System.Runtime.InteropServices;
+### Phase 1: JSLIB Definition
+- Create `.jslib` files in the `Assets/Plugins/WebGL` directory.
+- Wrap all functions in `mergeInto(LibraryManager.library, { ... });`.
 
-public class WebGLAdBridge : MonoBehaviour
-{
-    // YAGNI: Only import what is strictly needed for the ad network
-    [DllImport("__Internal")]
-    private static extern void CallMraidOpen(string url);
+### Phase 2: Memory Marshaling (Strings)
+WebAssembly uses a linear memory model. Passing strings requires explicit memory allocation.
+- **C# to JS**: C# strings are passed as memory pointers. You must use `UTF8ToString(ptr)` on the JS side to read them.
+- **JS to C#**: Returning a string from JS to C# requires allocating memory in the Wasm heap using `_malloc`, writing the string via `stringToUTF8`, and returning the pointer.
 
-    public void OpenStoreLink(string storeUrl)
-    {
-        #if UNITY_WEBGL && !UNITY_EDITOR
-        CallMraidOpen(storeUrl);
-        #else
-        Application.OpenURL(storeUrl);
-        #endif
-    }
+### Phase 3: P/Invoke Architecture
+- Define the external functions in C# using `[DllImport("__Internal")]`.
+- Do not call these functions if `Application.platform != RuntimePlatform.WebGLPlayer`. It will crash the editor.
 
-    // Called from JS via SendMessage
-    public void OnBrowserEvent(string status)
-    {
-        Debug.Log("Event from browser: " + status);
-    }
-}
-```
+## Common Rationalizations
+
+| Rationalization | Reality |
+|---|---|
+| "I'll just return a JS string directly to C#." | Wasm cannot read JS objects. You must allocate memory (`_malloc`) and pass a pointer. Failing to do so causes immediate memory corruption. |
+| "I don't need to check the platform before calling the `[DllImport]`." | Calling `.jslib` functions in the Unity Editor throws `EntryPointNotFoundException`. Always wrap calls in platform checks. |
+
+## Red Flags
+
+- Returning raw JS strings from `.jslib` functions instead of `_malloc` pointers.
+- Failing to call `_free` on the C# side after receiving an allocated string pointer from JS.
+
+## Verification
+
+Before finalizing the JS bridge, verify:
+- [ ] All `[DllImport]` calls are wrapped in WebGL platform checks.
+- [ ] Strings returned from JS are allocated via `_malloc`.
+- [ ] C# code safely handles or frees memory pointers received from the bridge.

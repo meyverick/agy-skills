@@ -1,17 +1,47 @@
 ---
 name: unity-ads-integration
-description: Integrates Unity's first-party ad network (Unity Ads SDK) into Unity projects, focusing on placement IDs, initialization sequences, and specific C# Advertisement APIs.
+description: Integrates Unity's first-party ad network into Unity projects. Use when handling Unity Ads SDK placement IDs, initialization sequences, and C# Advertisement APIs.
 ---
 
 # Unity Ads Integration
 
-This skill focuses on the implementation of the Unity Ads SDK in Unity C# projects, typically used when a project relies exclusively on Unity's first-party network without external mediation.
+This skill standardizes the implementation of the first-party Unity Ads SDK. It enforces the strict lifecycle of initialization, loading, and showing, leveraging the standard `IUnityAdsInitializationListener` and `IUnityAdsLoadListener` interfaces.
 
-## Core Rules
-1. **Asynchronous Initialization:** Always initialize the Unity Ads SDK asynchronously (`Advertisement.Initialize`) and implement the `IUnityAdsInitializationListener` interface to catch initialization failures.
-2. **Pre-loading Constraints:** Never attempt to show an ad without first explicitly loading the specific placement ID (`Advertisement.Load`) and awaiting the `IUnityAdsLoadListener` success callback.
-3. **Defensive Callbacks:** Implement `IUnityAdsShowListener` meticulously. Handle `OnUnityAdsShowFailure` gracefully (e.g., granting no rewards but allowing the game to continue without blocking UI) and only disburse rewarded items on `UnityAdsShowCompletionState.COMPLETED`.
-4. **Environment Separation:** Use compiler directives (`#if UNITY_IOS`, `#if UNITY_ANDROID`) to automatically switch between iOS and Android Game IDs at runtime. Ensure `testMode` is strictly disabled in production builds.
+## When to Use
 
-## Architecture Guidelines
-Wrap all Unity Ads API calls within a single centralized `AdManager` singleton or dependency-injected service. Never scatter `Advertisement.Show()` calls across various gameplay scripts.
+- **Use when** integrating `UnityEngine.Advertisements` into a mobile Unity project.
+- **Use when** triggering rewarded videos or interstitial ads natively.
+- **NOT for** building HTML5 playable ads or integrating AppLovin MAX.
+
+## Core Process
+
+### Phase 1: Interface Adherence
+- The ad manager script MUST implement `IUnityAdsInitializationListener`, `IUnityAdsLoadListener`, and `IUnityAdsShowListener`.
+- Do not attempt to poll the SDK state manually in `Update()`.
+
+### Phase 2: The Load & Show Lifecycle
+- **Initialize**: Call `Advertisement.Initialize()`. Wait for `OnInitializationComplete`.
+- **Load**: Call `Advertisement.Load(placementId)`. Wait for `OnUnityAdsAdLoaded`.
+- **Show**: Only call `Advertisement.Show(placementId)` if the ad has successfully loaded.
+
+### Phase 3: Reward State Verification
+- Inside `OnUnityAdsShowComplete`, explicitly check `showCompletionState == UnityAdsShowCompletionState.COMPLETED` before granting the player their reward.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|---|---|
+| "I'll just call `Advertisement.Show()` and catch the error if it fails." | Unity Ads will throw hard exceptions or lock the UI if `Show()` is called before `OnUnityAdsAdLoaded`. You must respect the lifecycle. |
+| "I'll grant the reward as soon as the video starts." | Users will immediately close the app or skip the ad. Rewards must strictly be granted in the `COMPLETED` state callback. |
+
+## Red Flags
+
+- Missing interface implementations on the AdManager class.
+- Calling `Advertisement.Load()` immediately after `Advertisement.Initialize()` without waiting for the completion callback.
+
+## Verification
+
+Before finalizing the Unity Ads integration:
+- [ ] The manager script implements all 3 core Unity Ads listeners.
+- [ ] `Load()` is only triggered after `OnInitializationComplete`.
+- [ ] Rewards are strictly tied to the `COMPLETED` enum state.

@@ -1,169 +1,61 @@
 ---
 name: secure-gitignore-management
-description: Manages and audits .gitignore files using a highly secure default-deny pattern. Enforces explicit security blocks on environment files (.env), keys, credentials, and logs. Uses git ls-files to verify that no sensitive files are tracked in the Git index, and excludes common compilation artifacts.
-license: Apache-2.0
-compatibility: Requires Git CLI (v2.0+) on any operating system (Windows, macOS, Linux).
+description: Manages and audits .gitignore files. Use when evaluating codebase security to strictly enforce a default-deny pattern for tracking files.
 ---
 
 # Secure Gitignore Management
 
-This skill outlines the process of designing, maintaining, and auditing `.gitignore` configurations using a security-first "default-deny" architecture to prevent accidental leaks of credentials, environment configurations, and build artifacts.
+This skill enforces a highly secure "default-deny" Git ignore strategy. It prevents accidental credential leaks, environmental configuration leaks, and compilation artifact bloat by strictly allowing only verified source files into the index.
 
-## Activation Criteria
+## When to Use
 
-Use this skill when:
-- Creating a new `.gitignore` file or auditing an existing one.
-- Setting up security policies for repository commits.
-- Verifying whether sensitive files are accidentally tracked in the Git index.
-- Excluding build artifacts, cache files, and system junk from version control.
+- **Use when** initializing a new repository (`git init`).
+- **Use when** auditing the repository for accidentally committed credentials.
+- **Use when** modifying the project's build toolchain or adding new environment variable architectures.
+- **NOT for** modifying `.git/` internal core configurations.
 
----
+## Core Process
 
-## 1. Default-Deny Architecture
+### Phase 1: The Default-Deny Architecture
+Instead of listing everything you *don't* want, a secure `.gitignore` lists everything, then selectively allows what you *do* want.
+- Add `*` to the very top of `.gitignore` to ignore everything.
+- Add `!*/` to allow directories.
 
-Default-deny means everything in the workspace is ignored by default (`*`), and only explicitly designated files or folders are allowed (`!`). This guarantees that newly created files (like local secrets or scratch scripts) cannot be accidentally staged.
+### Phase 2: Selective Allow-Listing
+Specifically allow your source code directories and configuration files.
+- `!src/`
+- `!docs/`
+- `!package.json`
+- `!README.md`
 
-### Allowlisting Rules:
-1. **Global Ignore**: Start with `*` to ignore all files and directories at the repository root.
-2. **Directory Allowlisting**: To allow files inside a folder, you must first allowlist the folder itself, then allowlist its contents. Git cannot traverse into an ignored directory.
-3. **Allowlist Order**: Allowlist specific files (like `package.json`, `tsconfig.json`) and specific directories (like `src/`, `public/`).
+### Phase 3: Explicit Security Blocks
+Even within allow-listed directories, ensure absolute strict bans on sensitive patterns:
+- `**/*.env`
+- `**/*.pem`
+- `**/*_rsa`
+- `**/*.sqlite` (unless explicitly intended for distribution)
 
----
+### Phase 4: Git Index Verification
+Verify what Git is actually tracking to ensure no secrets slipped through before the policy was enacted.
+- Execute `git ls-files` to audit currently tracked files.
+- If a sensitive file is tracked, execute `git rm --cached <file>` immediately.
 
-## 2. Explicit Security Blocks
+## Common Rationalizations
 
-Even with a default-deny pattern, you must explicitly declare security blocks to protect against accidental overrides (e.g., if a developer uses a wildcard allowlist or runs `git add --force`).
+| Rationalization | Reality |
+|---|---|
+| "A default-deny gitignore is too annoying to maintain." | Accidentally leaking AWS keys or database credentials is far more painful. Explicit tracking forces intentional engineering. |
+| "I'll just add `.env` to the end of the file." | Without a default-deny pattern, developers inevitably name a secret `.env.local` or `.env.test` which slips through the standard blocklist. |
 
-Ensure the following patterns are explicitly blocked and never allowlisted:
+## Red Flags
 
-*   **Environment Files**: `.env`, `.env.*`, `.env.local`
-*   **Credentials & Keys**: `*.pem`, `*.key`, `*.pub`, `id_rsa`, `*.pfx`, `*.cer`
-*   **API Tokens & Client Secrets**: `client_secret*.json`, `*.credentials`, `credentials.json`
-*   **Logs**: `*.log`, `npm-debug.log*`, `yarn-error.log*`, `pnpm-debug.log*`
-*   **Database Files**: `*.db`, `*.sqlite`, `*.sqlite3`
-*   **OS Junk**: `.DS_Store`, `Thumbs.db`
+- `.gitignore` files that do not start with a universal block (`*`).
+- Tracking files named `secrets.json`, `.env`, or ending in `.key`.
+- Committing heavy compilation artifacts (e.g., `node_modules/`, `dist/`).
 
----
+## Verification
 
-## 3. Verification Protocol (Defensive Programming)
-
-Just because a file is added to `.gitignore` does not mean it is safe. If a file was tracked *before* it was added to `.gitignore`, Git will continue tracking it. You must audit the Git index.
-
-### Step-by-Step Index Auditing:
-
-1.  **Check for Tracked Secrets (Cross-Platform)**: Run `git ls-files` with pathspecs. This runs natively on any shell (CMD, PowerShell, Bash, Zsh) and does not rely on Unix `grep` pipes:
-    ```bash
-    git ls-files "*.env*" "*.key" "*.pem" "*credentials*" "*secret*"
-    ```
-    *Note: In clean repositories where no secrets are tracked, this command outputs nothing and returns an exit code of `0`, avoiding false-positive CI/CD build failures.*
-
-2.  **Remove Ignored Files from Index**: If any ignored file (like a local database or secret file) is currently tracked, untrack it without deleting it from your local disk:
-    ```bash
-    git rm --cached <file-path>
-    ```
-    > [!WARNING]
-    > **Avoid Repository-Wide Cache Clears on Active Codebases**
-    > Re-indexing the entire repository (using `git rm -r --cached .` followed by `git add .`) rewrites index metadata for every file. On active collaborative repositories, committing this will trigger massive merge conflicts for other developers. Limit index clears to specific paths whenever possible, and only perform global resets during initial repository setups.
-3.  **Validate Git Status**: Confirm that the only changes staged for commit are those explicitly intended.
-
----
-
-## 4. Common Edge Cases & Gotchas
-
-*   **Empty Folders**: Git does not track empty folders. You cannot allowlist an empty folder unless it contains a dummy file (like `.gitkeep`) that is also allowlisted.
-*   **Allowlisting Subdirectories**: If you ignore everything (`*`) and want to allow a file deep in a nested folder, you must unignore all parent directories in the path:
-    ```gitignore
-    # Ignore everything
-    *
-    
-    # Allow the path down to the file
-    !parent/
-    !parent/child/
-    !parent/child/target-file.txt
-    ```
-*   **Large File & Payload Management (Green Software Alignment)**: Git is not designed to track large binary assets (e.g., raw videos, heavy audio files, uncompressed graphics, database dumps). Commit history retains these files forever, inflating clone times and CI/CD bandwidth. Exclude massive assets in `.gitignore` and manage them via **Git LFS (Large File Storage)** or cloud storage buckets.
-
----
-
-## Reference Example
-
-Below is a secure, production-ready `.gitignore` template using the default-deny strategy.
-
-```gitignore
-# ==============================================================================
-# 1. DEFAULT-DENY RULE
-# ==============================================================================
-# Ignore everything by default
-*
-# But track this .gitignore itself
-!.gitignore
-
-# ==============================================================================
-# 2. EXPLICIT SECURITY BLOCKS (Do not override these!)
-# ==============================================================================
-# Environment files
-.env
-.env.*
-!.env.example # Allow committing example configs only
-
-# Secrets & Certificates
-*.pem
-*.key
-*.pub
-*.pfx
-*.p12
-*.crt
-*.der
-credentials.json
-client_secret*.json
-
-# Database and store files
-*.db
-*.sqlite
-*.sqlite3
-*.csv
-*.xlsx
-
-# Logs and debug files
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# System junk
-.DS_Store
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-
-# IDE Settings (explicit block)
-.vscode/
-.idea/
-
-# ==============================================================================
-# 3. ALLOWLIST RULES (Explicitly permit project files)
-# ==============================================================================
-# Allow package & config files
-!package.json
-!package-lock.json
-!pnpm-lock.yaml
-!yarn.lock
-!tsconfig.json
-!svelte.config.js
-!vite.config.ts
-!vite.config.js
-!cli.js
-!README.md
-!LICENSE
-
-# Allow source code directories
-!src/
-!src/**
-
-# Allow rules and configurations
-!.agents/
-!.agents/**
-!references/
-!references/**
-```
+Before finalizing Gitignore management, verify:
+- [ ] `.gitignore` implements a default-deny `*` rule.
+- [ ] `git ls-files` returns zero sensitive credentials, API keys, or `.env` files.
+- [ ] Explicit allow-lists cover only necessary source and configuration files.

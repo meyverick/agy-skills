@@ -1,34 +1,48 @@
 ---
 name: unity-webgl-pruning
-description: Optimizes and prunes Unity WebGL exports to meet strict playable ad file size limits. Removes unused modules and enforces compression.
+description: Optimizes and prunes Unity WebGL exports. Use when reducing final build payload sizes to meet strict playable ad limits (e.g., < 5MB).
 ---
 
 # Unity WebGL Pruning
 
-This skill reduces the footprint of Unity WebGL builds for playable ads, ensuring compliance with strict ad network file size limits (often <3MB or <5MB) and Green Software Engineering principles.
+This skill dictates the aggressive stripping of Unity engine modules and asset compression to generate minimal WebAssembly (Wasm) builds suitable for HTML5 Playable Ads.
 
-## Core Rules
-1. **Module Stripping**: Strip unused Unity engine code (e.g., Physics2D/3D if not used, UI modules) via Unity Player Settings (Strip Engine Code).
-2. **Asset Compression**: Enforce Crunch compression or ASTC for textures, and force Mono over IL2CPP if it yields a smaller uncompressed size (or vice versa depending on the Unity version).
-3. **Cross-Platform Tooling**: If using post-build scripts to remove `.br` or `.gz` files or inline the WebGL loader, use OS-agnostic tools (e.g., Node.js `fs` module) rather than Unix shell scripts.
-4. **Green Software Engineering**: Optimize wire payloads. Smaller builds reduce energy consumption over millions of ad impressions.
+## When to Use
 
-## Reference Example
-An OS-agnostic Node.js script to inline the Unity framework `.js` into the `index.html`:
+- **Use when** configuring Player Settings for a WebGL export.
+- **Use when** the final `.wasm.br` or `.data` files exceed 5MB.
+- **NOT for** PC/Console standalone builds where size is unlimited.
 
-```javascript
-const fs = require('fs');
-const path = require('path');
+## Core Process
 
-const buildDir = path.join(__dirname, 'Build');
-const indexHtmlPath = path.join(__dirname, 'index.html');
+### Phase 1: Code Stripping
+- Set `Managed Stripping Level` to **High**.
+- Disable unused engine modules in `Player Settings -> Built-in Packages` (e.g., disable Physics 3D if the game is 2D, disable Unity UI if using HTML/DOM UI).
 
-let htmlContent = fs.readFileSync(indexHtmlPath, 'utf8');
-const frameworkPath = path.join(buildDir, 'game.framework.js');
+### Phase 2: Texture & Audio Compression
+- Force all textures to ASTC or Crunch compression. Ensure `Max Size` is restricted to 512 or 1024.
+- Force all audio clips to `Force To Mono` and compress as MP3/Vorbis at a low bitrate (e.g., 64kbps).
 
-if (fs.existsSync(frameworkPath)) {
-    const frameworkCode = fs.readFileSync(frameworkPath, 'utf8');
-    htmlContent = htmlContent.replace('<script src="Build/game.framework.js"></script>', `<script>${frameworkCode}</script>`);
-    fs.writeFileSync(indexHtmlPath, htmlContent);
-}
-```
+### Phase 3: WebAssembly Optimization
+- Enable **Brotli** compression.
+- Disable **Exceptions** (set to `None`).
+- Disable **Auto Graphics API** and explicitly select only WebGL 2.0 (fallback to 1.0 if strictly required by the ad network).
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|---|---|
+| "I'll leave Physics 3D enabled just in case." | Every unused module adds hundreds of kilobytes to the Wasm binary. You must explicitly strip everything not actively used. |
+| "High stripping level breaks my reflection code." | You must use `link.xml` to preserve specific classes rather than lowering the stripping level globally. |
+
+## Red Flags
+
+- `Managed Stripping Level` set to `Low` or `Minimal`.
+- Textures importing at `2048x2048` without compression overrides.
+
+## Verification
+
+Before concluding the WebGL optimization, verify:
+- [ ] Stripping level is set to `High`.
+- [ ] Unused Built-in Packages (Physics, UI, AI) are explicitly disabled.
+- [ ] Exceptions are disabled and Brotli compression is active.
